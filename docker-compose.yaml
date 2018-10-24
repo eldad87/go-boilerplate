@@ -1,0 +1,21 @@
+version: "2"
+services:
+  app:
+    environment:
+      app_name: 'connect'
+      build_env: 'development'
+      log_level: 'debug'
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
+      args:
+        build_env: 'development'
+        app_port: 8080
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ./src:/go/src/github.com/eldad87/connect/src
+      - ./Gopkg.lock:/go/src/github.com/eldad87/connect/Gopkg.lock
+      - ./Gopkg.toml:/go/src/github.com/eldad87/connect/Gopkg.toml
+    ports:
+      - "8080:8080"

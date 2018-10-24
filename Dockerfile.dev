@@ -1,0 +1,38 @@
+FROM golang:1.11.1 as builder
+
+# Arguments to Env variables
+ARG build_env
+ARG app_port
+
+ENV BUILD_ENV $build_env
+ENV APP_PORT $app_port
+
+# Path
+ENV GOBIN=$GOPATH/bin
+ENV PATH=$PATH:$GOBIN
+WORKDIR $GOPATH/src/github.com/eldad87/go-boilerplate
+
+RUN apt-get update && apt-get install -y --no-install-recommends vim
+
+# Dep
+ADD Gopkg.toml Gopkg.toml
+ADD Gopkg.lock Gopkg.lock
+
+Run go get -u github.com/golang/dep/cmd/dep
+Run dep ensure --vendor-only
+
+# Copy our code
+Add src/ src/
+
+# Build or install hot-reload
+RUN go get -u github.com/VojtechVitek/rerun/cmd/rerun
+
+# Build or install hot-reload
+# RUN go get -u github.com/markbates/refresh
+# RUN refresh init -c ./refresh.yml
+
+# Run binary or hot-reload
+CMD rerun -watch ./ -ignore vendor bin -run go run ./src/cmd/app/app.go
+# CMD refresh run
+
+EXPOSE ${APP_PORT}

@@ -1,0 +1,21 @@
+app:
+  name: default
+  port: 8080
+
+log:
+  level: debug
+
+sentry:
+  dsn: https://67c018312d4d47978d223e80f4c2e896@sentry.io/1305039
+
+machinery:
+  broker_dsn: amqp://[username:password@]@host[:port]
+  default_queue: boilerplate
+  result_backend_dsn: redis://[password@]host[port][/db_num]
+  exchange: boilerplate
+  exchange_type: direct
+  binding_key: boilerplate
+  consumer:
+    enable: false
+    tag: boilerplate-1
+    concurrent_tasks: 10
