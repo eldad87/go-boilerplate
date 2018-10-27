@@ -26,7 +26,9 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 
 # TODO
 - [ ] Docker: MySQL + RabbitMQ setup
-- [ ] Open tracing
+- [x] Docker-compose: Jaeger all-in-one
+- [x] Gin: Open tracing
+- [ ] Machinery: Open tracing
 - [ ] Prometheus server
 - [ ] ELK
 - [ ] Easy tasks registration

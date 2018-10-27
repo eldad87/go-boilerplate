@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/opentracing/opentracing-go"
+	"github.com/Bose/go-gin-opentracing"
 	jaeger "github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 
@@ -84,8 +84,6 @@ func main() {
 	}
 	defer closer.Close()
 
-	opentracing.GlobalTracer()
-
 	/*
 	 * PreRequisite: Gin
 	 * **************************** */
@@ -112,6 +110,10 @@ func main() {
 	ginRouter.GET(conf.GetString("prometheus.route"), func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	})
+
+	// OpenTracing
+	p := ginopentracing.OpenTracer([]byte(conf.GetString("app.name") + "-"))
+	ginRouter.Use(p)
 
 	/*
 	 * PreRequisite: Machinery

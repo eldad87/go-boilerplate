@@ -3,6 +3,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:5c4e97109a47f6e54ab63aafaf7dc2df7ef7b2534bc1d9c5c1210651df507b3b"
+  name = "github.com/Bose/go-gin-opentracing"
+  packages = ["."]
+  pruneopts = ""
+  revision = "1c343bfa5c2459c7bf4923d517668e61fb997ea3"
+
+[[projects]]
+  branch = "master"
   digest = "1:ac40e61f664bf0ffdff0a9508c360a8c54239cd6a139baa352a0da6800eff991"
   name = "github.com/RichardKnop/logging"
   packages = ["."]
@@ -462,15 +470,21 @@
   name = "github.com/uber/jaeger-client-go"
   packages = [
     ".",
+    "config",
     "internal/baggage",
+    "internal/baggage/remote",
     "internal/spanlog",
     "internal/throttler",
+    "internal/throttler/remote",
     "log",
+    "rpcmetrics",
     "thrift",
     "thrift-gen/agent",
+    "thrift-gen/baggage",
     "thrift-gen/jaeger",
     "thrift-gen/sampling",
     "thrift-gen/zipkincore",
+    "transport",
     "utils",
   ]
   pruneopts = ""
@@ -569,6 +583,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Bose/go-gin-opentracing",
     "github.com/RichardKnop/machinery/v1",
     "github.com/RichardKnop/machinery/v1/config",
     "github.com/RichardKnop/machinery/v1/log",
@@ -584,6 +599,7 @@
     "github.com/sirupsen/logrus",
     "github.com/spf13/viper",
     "github.com/uber/jaeger-client-go",
+    "github.com/uber/jaeger-client-go/config",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
