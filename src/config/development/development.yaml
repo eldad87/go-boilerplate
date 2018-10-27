@@ -19,3 +19,8 @@ machinery:
     enable: false
     tag: boilerplate-1
     concurrent_tasks: 10
+
+opentracing:
+  jaeger:
+    host: jaeger
+    port: 6831

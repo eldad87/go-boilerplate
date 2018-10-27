@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     environment:
-      app_name: 'connect'
+      app_name: 'boilerplate'
       build_env: 'development'
       log_level: 'debug'
     build:
@@ -14,8 +14,17 @@ services:
     security_opt:
       - seccomp:unconfined
     volumes:
-      - ./src:/go/src/github.com/eldad87/connect/src
-      - ./Gopkg.lock:/go/src/github.com/eldad87/connect/Gopkg.lock
-      - ./Gopkg.toml:/go/src/github.com/eldad87/connect/Gopkg.toml
+      - ./src:/go/src/github.com/eldad87/go-boilerplate/src
+      - ./Gopkg.lock:/go/src/github.com/eldad87/go-boilerplate/Gopkg.lock
+      - ./Gopkg.toml:/go/src/github.com/eldad87/go-boilerplate/Gopkg.toml
     ports:
       - "8080:8080"
+#  jaeger:
+#    image: jaegertracing/all-in-one:latest
+#    ports:
+#      - "5775:5775/udp"
+#      - "6831:6831/udp"
+#      - "6832:6832/udp"
+#      - "5778:5578"
+#      - "16686:16686"
+#      - "14268:14268"

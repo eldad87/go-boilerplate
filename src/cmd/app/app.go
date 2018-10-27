@@ -1,6 +1,10 @@
 package main
 
 import (
+	"github.com/opentracing/opentracing-go"
+	jaeger "github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+
 	machinery "github.com/RichardKnop/machinery/v1"
 	machineryConfigBuilder "github.com/RichardKnop/machinery/v1/config"
 	machineryLog "github.com/RichardKnop/machinery/v1/log"
@@ -17,7 +21,7 @@ import (
 	healthcheck "github.com/heptiolabs/healthcheck"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/eldad87/go-connect/src/config"
+	"github.com/eldad87/go-boilerplate/src/config"
 	"os"
 	"time"
 )
@@ -59,6 +63,28 @@ func main() {
 			log.AddHook(hook)
 		}
 	}
+
+	/*
+	 * PreRequisite: Jaeger
+	 * **************************** */
+	jaegConfig := jaegercfg.Configuration{
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:           true,
+			LocalAgentHostPort: conf.GetString("opentracing.jaeger.host") + ":" + conf.GetString("opentracing.jaeger.port"),
+		},
+	}
+	closer, err := jaegConfig.InitGlobalTracer(conf.GetString("app.name"))
+	if err != nil {
+		log.Error("Can't start jaeger: " + err.Error())
+		healthChecker.AddReadinessCheck("jaeger", func() error { return err }) // Permanent, take us down.
+	}
+	defer closer.Close()
+
+	opentracing.GlobalTracer()
 
 	/*
 	 * PreRequisite: Gin

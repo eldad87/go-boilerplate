@@ -25,10 +25,18 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - pkg/
 
 # TODO
+- [ ] Docker: MySQL + RabbitMQ setup
+- [ ] Open tracing
+- [ ] Prometheus server
+- [ ] ELK
+- [ ] Easy tasks registration
+- [ ] Consumer throttling
+- [ ] Producer throttling
 - [ ] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Machinery: 
  - [ ] Add configuration support for all backends
  - [ ] Circuit Breaker on the Broker (Producer)
+ - [ ] Easier produce/consume pattern
 - [ ] Unit-test coverage
 - [ ] Examples
 - [ ] Dockerized SSL support
@@ -53,6 +61,7 @@ exit
 ##### Commands
 For all available commands, please checkout the [Makefile](Makefile "Makefile").
 ### Linux
+##### Project
 ```
 git clone https://github.com/eldad87/go-boilerplate.git
 cd co-boilerplate
@@ -60,10 +69,29 @@ make init // First time only!
 dep ensure --vendor-only
 go run src/cmd/app/app.go
  ```
- ### Verification
+##### Instrumentation
+###### Jaeger
+This step is not required if you already 
+Setup a [Jaeger](https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/) container:
+```
+sudo docker run -d -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5578 \
+ -p 16686:16686 -p 14268:14268 --name jaeger jaegertracing/all-in-one:latest
+```
+To explore the traces, navigate to http://localhost:16686.
+ 
+### Verification
  To verify that you'r app is running correctly, simply browse for the following:
   - http://localhost/health/live -  Kubernetes liveness
   - http://localhost/health/ready  -  Kubernetes readiness
   - http://localhost/metrics - Prometheus instrumentation
   - http://localhost/ping  - echo `{"message":"pong"}
 Or, check the logs. The app is writing logs to STDOUT in JSON format.
+
+
+
+
+
+ ### Configuration
+ TBD
+  - File structure / env
+  - Env > File > Default
