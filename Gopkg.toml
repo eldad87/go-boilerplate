@@ -43,6 +43,10 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/gin-gonic/contrib"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/prometheus/client_golang"
 
 [[constraint]]
@@ -50,13 +54,17 @@
   name = "github.com/eldad87/go-gin-prometheus"
 
 [[constraint]]
-  name = "github.com/uber/jaeger-client-go"
-  version = "2.15.0"
+  name = "github.com/evalphobia/logrus_sentry"
+  version = "0.4.6"
+
+[[constraint]]
+  name = "github.com/RichardKnop/machinery"
+  version = "1.4.9"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
   version = "1.0.2"
 
 [[constraint]]
-  name = "github.com/RichardKnop/machinery"
-  version = "1.4.9"
+  name = "github.com/uber/jaeger-client-go"
+  version = "2.15.0"
