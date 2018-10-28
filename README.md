@@ -30,7 +30,7 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [x] Gin: Open tracing
 - [ ] Examples
 - [ ] Machinery: Open tracing
-- [ ] Docker: shared /vendor folder for improved debugging expiriance.
+- [x] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Consumer throttling
 - [ ] Producer throttling
 - [ ] Easy tasks registration
