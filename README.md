@@ -25,24 +25,39 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - pkg/
 
 # TODO
-- [ ] Docker: MySQL + RabbitMQ setup
+- [x] Docker: MySQL + RabbitMQ setup
 - [x] Docker-compose: Jaeger all-in-one
 - [x] Gin: Open tracing
+- [ ] Examples
 - [ ] Machinery: Open tracing
-- [ ] Prometheus server
-- [ ] ELK
-- [ ] Easy tasks registration
+- [ ] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Consumer throttling
 - [ ] Producer throttling
-- [ ] Docker: shared /vendor folder for improved debugging expiriance.
+- [ ] Easy tasks registration
+- [ ] Protect monitoring HTTP entrypoints (http://localhost/metrics)
+- [ ] Unit-test coverage
+- [ ] Prometheus server
+- [ ] ELK
 - [ ] Machinery: 
  - [ ] Add configuration support for all backends
  - [ ] Circuit Breaker on the Broker (Producer)
  - [ ] Easier produce/consume pattern
-- [ ] Unit-test coverage
-- [ ] Examples
 - [ ] Dockerized SSL support
-- [ ] Protect monitoring HTTP entrypoints (http://localhost/metrics)
+- [ ] Jaeger: Prometheus [Bug](https://github.com/jaegertracing/jaeger-lib/issues/33), [Bug](https://github.com/uber-go/tally/issues/42):
+```
+import(
+	"github.com/opentracing/opentracing-go"
+	jaegerPrometheus "github.com/uber/jaeger-lib/metrics/prometheus"
+)
+
+// Prometheus
+metricsFactory := jaegerPrometheus.New()
+jaegercfg.Metrics(metricsFactory)
+
+// Result:
+vendor/github.com/uber/jaeger-lib/metrics/prometheus/factory.go:143:3: cannot use hv.WithLabelValues(f.tagsAsLabelValues(labelNames, tags)...) (type prometheus.Observer) as type prometheus.Histogram in field value:
+prometheus.Observer does not implement prometheus.Histogram (missing Collect method)
+```
 
 # Installing
 ### Docker

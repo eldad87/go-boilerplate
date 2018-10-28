@@ -27,12 +27,7 @@ Add src/ src/
 # Build or install hot-reload
 RUN go get -u github.com/VojtechVitek/rerun/cmd/rerun
 
-# Build or install hot-reload
-# RUN go get -u github.com/markbates/refresh
-# RUN refresh init -c ./refresh.yml
-
 # Run binary or hot-reload
 CMD rerun -watch ./ -ignore vendor bin -run go run ./src/cmd/app/app.go
-# CMD refresh run
 
 EXPOSE ${APP_PORT}

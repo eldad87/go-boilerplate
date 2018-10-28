@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Bose/go-gin-opentracing"
+	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pgk/uber/jaeger-client-go/log/logrus"
 	jaeger "github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 
@@ -12,7 +13,8 @@ import (
 	"github.com/eldad87/go-gin-prometheus"
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/contrib/ginrus"
+
+	ginlogrus "github.com/Bose/go-gin-logrus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -77,7 +79,8 @@ func main() {
 			LocalAgentHostPort: conf.GetString("opentracing.jaeger.host") + ":" + conf.GetString("opentracing.jaeger.port"),
 		},
 	}
-	closer, err := jaegConfig.InitGlobalTracer(conf.GetString("app.name"))
+
+	closer, err := jaegConfig.InitGlobalTracer(conf.GetString("app.name"), jaegercfg.Logger(jaegerLogrus.NewLogger(log.StandardLogger())))
 	if err != nil {
 		log.Error("Can't start jaeger: " + err.Error())
 		healthChecker.AddReadinessCheck("jaeger", func() error { return err }) // Permanent, take us down.
@@ -92,8 +95,14 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Configure middlewares: logrus, Auto recovery and Gzip support
-	ginRouter.Use(ginrus.Ginrus(log.StandardLogger(), time.RFC3339, true), gin.Recovery(), gzip.Gzip(gzip.BestCompression))
+	ginRouter.Use(ginlogrus.WithTracing(log.StandardLogger(),
+		false,
+		time.RFC3339,
+		true,
+		"trace-id",
+		[]byte("uber-trace-id"),
+		[]byte("tracing-context")),
+		gin.Recovery(), gzip.Gzip(gzip.BestCompression))
 
 	// Health check support
 	healthRoute := ginRouter.Group(conf.GetString("health_check.route.group"))
@@ -124,9 +133,10 @@ func main() {
 		ResultBackend: conf.GetString("machinery.result_backend_dsn"),
 		NoUnixSignals: true, // We will manage our signaling
 		AMQP: &machineryConfigBuilder.AMQPConfig{
-			Exchange:     conf.GetString("machinery.exchange"),
-			ExchangeType: conf.GetString("machinery.exchange_type"),
-			BindingKey:   conf.GetString("machinery.binding_key"),
+			Exchange:      conf.GetString("machinery.exchange"),
+			ExchangeType:  conf.GetString("machinery.exchange_type"),
+			BindingKey:    conf.GetString("machinery.binding_key"),
+			PrefetchCount: conf.GetInt("machinery.prefetch_count"),
 		},
 	}
 
@@ -140,7 +150,7 @@ func main() {
 	machineryLog.Set(log.StandardLogger())
 
 	// Start our consumer
-	if true == conf.GetBool("machinery.consumer.enable") {
+	if 1 == conf.GetInt("machinery.consumer.enable") {
 		worker := server.NewWorker(conf.GetString("machinery.consumer.tag"), conf.GetInt("machinery.consumer.concurrent_tasks"))
 		errorsChan := make(chan error)
 		worker.LaunchAsync(errorsChan)

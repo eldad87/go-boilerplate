@@ -24,6 +24,10 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	// Defaults: Sentry
 	conf.SetDefault("sentry.dsn", "")
 
+	// Defaults: DataBase
+	conf.SetDefault("database.driver", "")
+	conf.SetDefault("database.dsn", "")
+
 	// Defaults: Machinery
 	conf.SetDefault("machinery.broker_dsn", "")
 	conf.SetDefault("machinery.default_queue", "")
@@ -31,9 +35,10 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("machinery.exchange", "")
 	conf.SetDefault("machinery.exchange_type", "")
 	conf.SetDefault("machinery.binding_key", "")
-	conf.SetDefault("machinery.consumer.enable", false)
+	conf.SetDefault("machinery.consumer.enable", 0)
 	conf.SetDefault("machinery.consumer.tag", "")
-	conf.SetDefault("machinery.consumer.concurrent_tasks", 0)
+	conf.SetDefault("machinery.consumer.concurrent_tasks", 10)
+	conf.SetDefault("machinery.consumer.prefetch_count", 1)
 
 	// Conf Files
 	//conf.SetConfigType("yaml") 					// We're using yaml

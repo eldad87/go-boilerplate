@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"fmt"
-	machineryTasks "github.com/machinery/v1/tasks"
+	machineryTasks "github.com/RichardKnop/machinery/v1/tasks"
 )
 
 func NewSignature(name string, args ...interface{}) (*machineryTasks.Signature, error) {
@@ -19,8 +19,4 @@ func NewSignature(name string, args ...interface{}) (*machineryTasks.Signature, 
 	}
 
 	return sig, nil
-}
-
-type RegisterTask interface {
-	Tasks() map[string]interface{}
 }

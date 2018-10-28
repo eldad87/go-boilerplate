@@ -5,6 +5,18 @@ services:
       app_name: 'boilerplate'
       build_env: 'development'
       log_level: 'debug'
+      database_driver: mysql
+      database_dsn: root:password@tcp(127.0.0.1:3306)/boilerplate
+      machinery_broker__dsn: amqp://rabbitmq:rabbitmq@rabbit:5672
+      machinery_default__queue: boilerplate
+      machinery_result__backend__dsn: redis://redis:6379
+      machinery_exchange: boilerplate
+      machinery_exchange__type: direct
+      machinery_binding__key: boilerplate
+      machinery_consumer_enable: 1
+      machinery_consumer_tag: default-01
+      machinery_consumer_concurrent__tasks: 10
+      machinery_consumer_prefetch__count: 1
     build:
       dockerfile: Dockerfile.dev
       context: .
@@ -19,6 +31,20 @@ services:
       - ./Gopkg.toml:/go/src/github.com/eldad87/go-boilerplate/Gopkg.toml
     ports:
       - "8080:8080"
+    depends_on:
+      - redis
+      - rabbit
+      - db
+  redis:
+    image: redis
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+    volumes:
+    - ./data/redis:/data
+    entrypoint: redis-server --appendonly yes
+    restart: always
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
@@ -28,3 +54,26 @@ services:
       - "5778:5578"
       - "16686:16686"
       - "14268:14268"
+  db:
+    image: mysql:5.7
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: boilerplate
+      MYSQL_DATABASE: boilerplate
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+  rabbit:
+    image: "rabbitmq:3-management"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    tty: true
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq

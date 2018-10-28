@@ -3,6 +3,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:ce36d687a91dd1f1c305a654cc30c0d6fb64f0cd2474c1cf986404c570b794f1"
+  name = "github.com/Bose/go-gin-logrus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "85d7fc6fbd61ae30aeb5087f67cd9c0c764448b0"
+
+[[projects]]
+  branch = "master"
   digest = "1:5c4e97109a47f6e54ab63aafaf7dc2df7ef7b2534bc1d9c5c1210651df507b3b"
   name = "github.com/Bose/go-gin-opentracing"
   packages = ["."]
@@ -178,14 +186,6 @@
   packages = ["."]
   pruneopts = ""
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
-
-[[projects]]
-  branch = "master"
-  digest = "1:70c439c1b783ac50223423c40ad23af2426f2b5634811b1c8692b3a2157752c1"
-  name = "github.com/gin-gonic/contrib"
-  packages = ["ginrus"]
-  pruneopts = ""
-  revision = "39cfb9727134fef3120d2458fce5fab14265a46c"
 
 [[projects]]
   digest = "1:748df8eda48a48d6d05ebb848a6cf966f846fa4e6179f8731385d04d7a287fc1"
@@ -583,17 +583,17 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Bose/go-gin-logrus",
     "github.com/Bose/go-gin-opentracing",
     "github.com/RichardKnop/machinery/v1",
     "github.com/RichardKnop/machinery/v1/config",
     "github.com/RichardKnop/machinery/v1/log",
+    "github.com/RichardKnop/machinery/v1/tasks",
     "github.com/eldad87/go-gin-prometheus",
     "github.com/evalphobia/logrus_sentry",
     "github.com/gin-contrib/gzip",
-    "github.com/gin-gonic/contrib/ginrus",
     "github.com/gin-gonic/gin",
     "github.com/heptiolabs/healthcheck",
-    "github.com/opentracing/opentracing-go",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/sirupsen/logrus",

@@ -29,7 +29,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 FROM scratch
 
 COPY --from=builder /app /app
-# COPY --from=builder /go/src/app/src/config/${BUILD_ENV} ./config/src/${BUILD_ENV}
+# COPY --from=builder /go/src/app/github.com/eldad87/go-boilerplate/config/${BUILD_ENV} ./config/src/${BUILD_ENV}
 
 EXPOSE ${APP_PORT}
 CMD /app

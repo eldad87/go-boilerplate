@@ -13,7 +13,7 @@ list:
 #############################
 
 init:
-	mkdir -p vendor data
+	mkdir -p vendor data/mysql data/redis data/rabbitmq
 
 up:
 	docker-compose up -d
