@@ -9,21 +9,24 @@ volumes:
 services:
   app:
     environment:
-      app_name: 'boilerplate'
-      build_env: 'development'
-      log_level: 'debug'
-      database_driver: mysql
-      database_dsn: root:password@tcp(127.0.0.1:3306)/boilerplate
-      machinery_broker__dsn: amqp://rabbitmq:rabbitmq@rabbit:5672
-      machinery_default__queue: boilerplate
-      machinery_result__backend__dsn: redis://redis:6379
-      machinery_exchange: boilerplate
-      machinery_exchange__type: direct
-      machinery_binding__key: boilerplate
-      machinery_consumer_enable: 1
-      machinery_consumer_tag: default-01
-      machinery_consumer_concurrent__tasks: 10
-      machinery_consumer_prefetch__count: 1
+      - APP_NAME=boilerplate
+      - BUILD_ENV=development
+      - LOG_LEVEL=debug
+      - DATABASE_DRIVER=mysql
+      - DATABASE_DSN=root:password@tcp(127.0.0.1:3306)/boilerplate
+      # Producer & Consumer
+      - MACHINERY_BROKER__DSN=amqp://rabbitmq:rabbitmq@rabbit:5672
+      - MACHINERY_DEFAULT__QUEUE=boilerplate
+      - MACHINERY_RESULT__BACKEND__DSN=redis://redis:6379
+      - MACHINERY_EXCHANGE=boilerplate
+      - MACHINERY_EXCHANGE__TYPE=direct
+      # Producer
+      - MACHINERY_BINDING__KEY=boilerplate
+      # Consumer
+      - MACHINERY_CONSUMER_ENABLE=1
+      - MACHINERY_CONSUMER_TAG=default-01
+      - MACHINERY_CONSUMER_CONCURRENT__TASKS=10
+      - MACHINERY_CONSUMER_PREFETCH__COUNT=1
     build:
       dockerfile: Dockerfile.dev
       context: .

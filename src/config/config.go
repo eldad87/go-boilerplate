@@ -40,6 +40,10 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("machinery.consumer.concurrent_tasks", 10)
 	conf.SetDefault("machinery.consumer.prefetch_count", 1)
 
+	// Conf Env
+	conf.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "_", "__")) // APP_DATA__BASE_PASS -> app.data_base.pass
+	conf.AutomaticEnv()                                              // Automatically load Env variables
+
 	// Conf Files
 	//conf.SetConfigType("yaml") 					// We're using yaml
 	conf.SetConfigName(env)                   // Search for a config file that matches our environment
@@ -48,13 +52,9 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Read additional files
 	for confFile := range confFiles {
-		viper.SetConfigName(confFile)
-		viper.MergeInConfig()
+		conf.SetConfigName(confFile)
+		conf.MergeInConfig()
 	}
-
-	// Conf Env
-	conf.AutomaticEnv()                                              // Automatically load Env variables
-	conf.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "_", "__")) // APP_DATA__BASE_PASS -> app.data_base.pass
 
 	return conf, nil
 }
