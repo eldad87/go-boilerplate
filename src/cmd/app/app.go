@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Bose/go-gin-opentracing"
+	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
 	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pgk/uber/jaeger-client-go/log/logrus"
 	jaeger "github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
@@ -151,6 +152,10 @@ func main() {
 
 	// Start our consumer
 	if 1 == conf.GetInt("machinery.consumer.enable") {
+		server.RegisterTask("repeat", func(str string) (string, error) {
+			return str, nil
+		})
+
 		worker := server.NewWorker(conf.GetString("machinery.consumer.tag"), conf.GetInt("machinery.consumer.concurrent_tasks"))
 		errorsChan := make(chan error)
 		worker.LaunchAsync(errorsChan)
@@ -164,6 +169,9 @@ func main() {
 	/*
 	 * Gin: Handlers
 	 * **************************** */
+	echo := ginController.NewEcho(log.StandardLogger(), server)
+	ginRouter.GET("/echo", echo.Repeat)
+
 	ginRouter.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",

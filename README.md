@@ -28,8 +28,8 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [x] Docker: MySQL + RabbitMQ setup
 - [x] Docker-compose: Jaeger all-in-one
 - [x] Gin: Open tracing
-- [ ] Examples
-- [ ] Machinery: Open tracing
+- [x] Examples
+- [x] Machinery: Open tracing
 - [ ] OT + Prom using override m2b
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Consumer throttling
