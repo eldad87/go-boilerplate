@@ -30,6 +30,8 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [x] Gin: Open tracing
 - [x] Examples
 - [x] Machinery: Open tracing
+- [x] Redis Commander
+- [ ] App load in [delay](https://docs.docker.com/compose/startup-order/) of 1sec after RabbitMQ 
 - [ ] OT + Prom using override m2b
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Consumer throttling
@@ -95,8 +97,9 @@ Setup a [Jaeger](https://sematext.com/blog/opentracing-jaeger-as-distributed-tra
 sudo docker run -d -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5578 \
  -p 16686:16686 -p 14268:14268 --name jaeger jaegertracing/all-in-one:latest
 ```
-To explore the traces, navigate to http://localhost:16686.
- 
+To explore the traces, navigate to http://localhost:16686
+Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander at http://localhost:8082/
+
 ### Verification
  To verify that you'r app is running correctly, simply browse for the following:
   - http://localhost/health/live -  Kubernetes liveness
