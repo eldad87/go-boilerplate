@@ -6,11 +6,13 @@ import (
 	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pgk/gin/middleware"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
 
+	"github.com/opentracing/opentracing-go"
+	jaegerprom "github.com/uber/jaeger-lib/metrics/prometheus"
+
 	"github.com/Bose/go-gin-opentracing"
 	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
 	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pgk/uber/jaeger-client-go/log/logrus"
 	jaeger "github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
 
 	machinery "github.com/RichardKnop/machinery/v1"
 	machineryConfigBuilder "github.com/RichardKnop/machinery/v1/config"
@@ -89,23 +91,35 @@ func main() {
 	/*
 	 * PreRequisite: Jaeger
 	 * **************************** */
-	jaegConfig := jaegercfg.Configuration{
-		Sampler: &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
-			Param: 1,
-		},
-		Reporter: &jaegercfg.ReporterConfig{
-			LogSpans:           true,
-			LocalAgentHostPort: conf.GetString("opentracing.jaeger.host") + ":" + conf.GetString("opentracing.jaeger.port"),
-		},
+	// Add jaeger metrics and reporting to prometheus route
+	logAdapt := jaegerLogrus.NewLogger(log.StandardLogger())
+	factory := jaegerprom.New()
+	metrics := jaeger.NewMetrics(factory, map[string]string{"lib": "jaeger"})
+
+	//Add tracing to application
+	transport, err := jaeger.NewUDPTransport(conf.GetString("opentracing.jaeger.host")+":"+conf.GetString("opentracing.jaeger.port"), 0)
+	if err != nil {
+		healthChecker.AddReadinessCheck("jaeger", func() error { return err }) // Permanent, take us down.
+		log.Error(err)
 	}
 
-	closer, err := jaegConfig.InitGlobalTracer(conf.GetString("app.name"), jaegercfg.Logger(jaegerLogrus.NewLogger(log.StandardLogger())))
-	if err != nil {
-		log.Error("Can't start jaeger: " + err.Error())
-		healthChecker.AddReadinessCheck("jaeger", func() error { return err }) // Permanent, take us down.
-	}
+	reporter := jaeger.NewCompositeReporter(
+		jaeger.NewLoggingReporter(logAdapt),
+		jaeger.NewRemoteReporter(transport,
+			jaeger.ReporterOptions.Metrics(metrics),
+			jaeger.ReporterOptions.Logger(logAdapt),
+		),
+	)
+	defer reporter.Close()
+
+	sampler := jaeger.NewConstSampler(true)
+	tracer, closer := jaeger.NewTracer(conf.GetString("app.name"),
+		sampler,
+		reporter,
+		jaeger.TracerOptions.Metrics(metrics),
+	)
 	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
 
 	/*
 	 * PreRequisite: Gin

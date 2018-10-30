@@ -33,9 +33,13 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [x] Redis Commander
 - [x] Logrus Prometheus message type count
 - [x] Gin rate limit
-- [ ] Machinery Redis result backend limits/config (MaxActive, MaxIdle, MaxConnLifetime etc.)
-- [ ] App load in [delay](https://docs.docker.com/compose/startup-order/) of 1sec after RabbitMQ 
-- [ ] OT + Prom using override m2b
+- [x] Jaeger/OT + Prometheus
+- [ ] Machinery: 
+ - [ ] Producer: Hystrix (Conn, CB, TO), throttling/Rate Limit (Juju)
+ - [ ] Machinery Redis result backend limits/config (MaxActive, MaxIdle, MaxConnLifetime etc.)
+ - [ ] Consumer/AsyncRes: Hystrix (Conn, CB, TO), throttling/Rate Limit (Juju). KIM: Redis already ~protected-ish
+ - [ ] Easier produce/consume pattern
+ - [ ] Add configuration support for all backends
 - [ ] Logrus [Slack report](https://github.com/johntdyer/slackrus)
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Consumer throttling
@@ -45,26 +49,8 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [ ] Unit-test coverage
 - [ ] Prometheus server
 - [ ] ELK
-- [ ] Machinery: 
- - [ ] Add configuration support for all backends
- - [ ] Circuit Breaker on the Broker (Producer)
- - [ ] Easier produce/consume pattern
+
 - [ ] Dockerized SSL support
-- [ ] Jaeger: Prometheus [Bug](https://github.com/jaegertracing/jaeger-lib/issues/33), [Bug](https://github.com/uber-go/tally/issues/42):
-```
-import(
-	"github.com/opentracing/opentracing-go"
-	jaegerPrometheus "github.com/uber/jaeger-lib/metrics/prometheus"
-)
-
-// Prometheus
-metricsFactory := jaegerPrometheus.New()
-jaegercfg.Metrics(metricsFactory)
-
-// Result:
-vendor/github.com/uber/jaeger-lib/metrics/prometheus/factory.go:143:3: cannot use hv.WithLabelValues(f.tagsAsLabelValues(labelNames, tags)...) (type prometheus.Observer) as type prometheus.Histogram in field value:
-prometheus.Observer does not implement prometheus.Histogram (missing Collect method)
-```
 
 # Installing
 ### Docker
