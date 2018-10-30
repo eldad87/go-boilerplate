@@ -37,6 +37,7 @@ rebuild:
 #############################
 # General
 #############################
+bash: shell
 
 shell:
 	docker-compose exec app /bin/bash

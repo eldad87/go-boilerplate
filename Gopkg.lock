@@ -64,6 +64,18 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:0ef07197f29c21ea0d5e3d0f686b5c7bed2e2c69cb8b4be6228d83ee9e4ed5ae"
+  name = "github.com/afex/hystrix-go"
+  packages = [
+    "hystrix",
+    "hystrix/metric_collector",
+    "hystrix/rolling",
+  ]
+  pruneopts = ""
+  revision = "fa1af6a1f4f56e0e50d427fe901cd604d8c6fb8a"
+
+[[projects]]
   digest = "1:40ce97de0080e7fb6cc4726f93f61dc66fc6d05953da939a94561a95a3f72d64"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -253,6 +265,14 @@
   packages = ["."]
   pruneopts = ""
   revision = "6ff867650f40c632367411120275478876202233"
+
+[[projects]]
+  digest = "1:20cb452f40f1087ec69fffbf94705a1d7c8095ac5b951464ca8d6d1073f39358"
+  name = "github.com/ibm-developer/generator-ibm-core-golang-gin"
+  packages = ["generators/app/templates/plugins"]
+  pruneopts = ""
+  revision = "c9374336e940ab6dbce79e82df7abad555e787ef"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
@@ -598,11 +618,13 @@
     "github.com/RichardKnop/machinery/v1/config",
     "github.com/RichardKnop/machinery/v1/log",
     "github.com/RichardKnop/machinery/v1/tasks",
+    "github.com/afex/hystrix-go/hystrix",
     "github.com/eldad87/go-gin-prometheus",
     "github.com/evalphobia/logrus_sentry",
     "github.com/gin-contrib/gzip",
     "github.com/gin-gonic/gin",
     "github.com/heptiolabs/healthcheck",
+    "github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins",
     "github.com/opentracing/opentracing-go",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",

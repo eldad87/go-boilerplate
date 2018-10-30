@@ -12,6 +12,12 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("app.name", "default")
 	conf.SetDefault("app.port", "8080")
 
+	conf.SetDefault("app.request.timeout", 100)
+	conf.SetDefault("app.request.max_conn", 10)
+	conf.SetDefault("app.request.vol_threshold", 20)
+	conf.SetDefault("app.request.sleep_window", 5000)
+	conf.SetDefault("app.request.err_percent_threshold", 50)
+
 	// Defaults: Monitoring
 	conf.SetDefault("log.level", "debug")
 	conf.SetDefault("health_check.route.group", "/health")

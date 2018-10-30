@@ -1,6 +1,11 @@
 package main
 
 import (
+	"github.com/afex/hystrix-go/hystrix"
+	"github.com/afex/hystrix-go/hystrix/metric_collector"
+	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pgk/gin/middleware"
+	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
+
 	"github.com/Bose/go-gin-opentracing"
 	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
 	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pgk/uber/jaeger-client-go/log/logrus"
@@ -23,6 +28,7 @@ import (
 
 	healthcheck "github.com/heptiolabs/healthcheck"
 	log "github.com/sirupsen/logrus"
+	"github.com/weaveworks/promrus"
 
 	"github.com/eldad87/go-boilerplate/src/config"
 	"os"
@@ -39,6 +45,15 @@ func main() {
 	}
 
 	/*
+	 * PreRequisite: Hystrix
+	 * **************************** */
+	// Prometheus
+	collector := plugins.InitializePrometheusCollector(plugins.PrometheusCollectorConfig{
+		Namespace: conf.GetString("app.name"),
+	})
+	metricCollector.Registry.Register(collector.NewPrometheusCollector)
+
+	/*
 	 * PreRequisite: Health Check + Prometheus gauge
 	 * **************************** */
 	healthChecker := healthcheck.NewMetricsHandler(prometheus.DefaultRegisterer, "health_check")
@@ -50,6 +65,10 @@ func main() {
 	log.SetOutput(os.Stdout)
 	logLevel, _ := log.ParseLevel(conf.GetString("log.level"))
 	log.SetLevel(logLevel)
+
+	// Prometheus
+	hook := promrus.MustNewPrometheusHook()
+	log.AddHook(hook)
 
 	// Sentry
 	if conf.GetString("sentry.dsn") != "" {
@@ -96,6 +115,15 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Configure hystrix, later enforced by a middleware (HystrixHandler)
+	hystrix.ConfigureCommand(conf.GetString("app.name"), hystrix.CommandConfig{
+		Timeout:                conf.GetInt("app.request.timeout"),
+		MaxConcurrentRequests:  conf.GetInt("app.request.max_conn"),
+		RequestVolumeThreshold: conf.GetInt("app.request.vol_threshold"),
+		SleepWindow:            conf.GetInt("app.request.sleep_window"),
+		ErrorPercentThreshold:  conf.GetInt("app.request.err_percent_threshold"),
+	})
+
 	ginRouter.Use(ginlogrus.WithTracing(log.StandardLogger(),
 		false,
 		time.RFC3339,
@@ -103,7 +131,9 @@ func main() {
 		"trace-id",
 		[]byte("uber-trace-id"),
 		[]byte("tracing-context")),
-		gin.Recovery(), gzip.Gzip(gzip.BestCompression))
+		gin.Recovery(),
+		ginHystrixMiddleware.HystrixHandler(conf.GetString("app.name")),
+		gzip.Gzip(gzip.BestCompression))
 
 	// Health check support
 	healthRoute := ginRouter.Group(conf.GetString("health_check.route.group"))

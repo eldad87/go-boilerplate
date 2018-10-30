@@ -32,6 +32,8 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [x] Machinery: Open tracing
 - [x] Redis Commander
 - [x] Logrus Prometheus message type count
+- [x] Gin rate limit
+- [ ] Machinery Redis result backend limits/config (MaxActive, MaxIdle, MaxConnLifetime etc.)
 - [ ] App load in [delay](https://docs.docker.com/compose/startup-order/) of 1sec after RabbitMQ 
 - [ ] OT + Prom using override m2b
 - [ ] Logrus [Slack report](https://github.com/johntdyer/slackrus)
