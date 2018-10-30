@@ -508,6 +508,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:d676526dd24c92bfe86269f9e6a70c4d340f6017d96915a01c23fef98db4db4f"
+  name = "github.com/weaveworks/promrus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "0599d764e054d4e983bb120e30759179fafe3942"
+  version = "v1.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:36b1b85f11b8e2eb8577332a4002be4c6d81211976c7c7d4b0afacd1f5694641"
   name = "golang.org/x/crypto"
@@ -586,6 +594,7 @@
     "github.com/Bose/go-gin-logrus",
     "github.com/Bose/go-gin-opentracing",
     "github.com/RichardKnop/machinery/v1",
+    "github.com/RichardKnop/machinery/v1/brokers/iface",
     "github.com/RichardKnop/machinery/v1/config",
     "github.com/RichardKnop/machinery/v1/log",
     "github.com/RichardKnop/machinery/v1/tasks",
@@ -594,12 +603,15 @@
     "github.com/gin-contrib/gzip",
     "github.com/gin-gonic/gin",
     "github.com/heptiolabs/healthcheck",
+    "github.com/opentracing/opentracing-go",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/sirupsen/logrus",
     "github.com/spf13/viper",
     "github.com/uber/jaeger-client-go",
     "github.com/uber/jaeger-client-go/config",
+    "github.com/weaveworks/promrus",
+    "golang.org/x/net/context",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

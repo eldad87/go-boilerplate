@@ -31,8 +31,10 @@ Dockeriezed, Production grate, easy to (re)use boilerplate for Go applications. 
 - [x] Examples
 - [x] Machinery: Open tracing
 - [x] Redis Commander
+- [x] Logrus Prometheus message type count
 - [ ] App load in [delay](https://docs.docker.com/compose/startup-order/) of 1sec after RabbitMQ 
 - [ ] OT + Prom using override m2b
+- [ ] Logrus [Slack report](https://github.com/johntdyer/slackrus)
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
 - [ ] Consumer throttling
 - [ ] Producer throttling
