@@ -6,8 +6,8 @@ import (
 	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pgk/gin/middleware"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
 
+	jaegerprom "github.com/jaegertracing/jaeger-lib/metrics/prometheus"
 	"github.com/opentracing/opentracing-go"
-	jaegerprom "github.com/uber/jaeger-lib/metrics/prometheus"
 
 	"github.com/Bose/go-gin-opentracing"
 	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"

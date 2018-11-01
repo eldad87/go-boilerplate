@@ -275,6 +275,14 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:aa1598d34009b45ce74fdabdd25e4258d7923d1e1b418d4c98482e79607cb9b0"
+  name = "github.com/jaegertracing/jaeger-lib"
+  packages = ["metrics/prometheus"]
+  pruneopts = ""
+  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
+  version = "v1.5.0"
+
+[[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -382,8 +390,7 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:cd59ad6c4df65781c8328e18a895aa06ead533f26eaaa0c5afcd463a077a6924"
+  digest = "1:f3e56d302f80d760e718743f89f4e7eaae532d4218ba330e979bd051f78de141"
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
@@ -391,7 +398,8 @@
     "prometheus/promhttp",
   ]
   pruneopts = ""
-  revision = "f30f428035633da15d00d3dfefb0128c5e569ef4"
+  revision = "1cafe34db7fdec6022e17e00e1c1ea501022f3e4"
+  version = "v0.9.0"
 
 [[projects]]
   branch = "master"
@@ -512,12 +520,12 @@
   version = "v2.15.0"
 
 [[projects]]
-  digest = "1:aa1598d34009b45ce74fdabdd25e4258d7923d1e1b418d4c98482e79607cb9b0"
+  digest = "1:6d9f2d36154993272a7cea54b2279b9600fcc6153a30c359239ccb6f8be8ef1d"
   name = "github.com/uber/jaeger-lib"
   packages = ["metrics"]
   pruneopts = ""
-  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
-  version = "v1.5.0"
+  revision = "5519f3beabf28707fca8d3f47f9cff87dad48d96"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:2e7f653483e51243b6cd6de60ce39bde0d6927d10a3c24295ab0f82cb1efeae2"
@@ -614,24 +622,24 @@
     "github.com/Bose/go-gin-logrus",
     "github.com/Bose/go-gin-opentracing",
     "github.com/RichardKnop/machinery/v1",
-    "github.com/RichardKnop/machinery/v1/brokers/iface",
     "github.com/RichardKnop/machinery/v1/config",
     "github.com/RichardKnop/machinery/v1/log",
     "github.com/RichardKnop/machinery/v1/tasks",
     "github.com/afex/hystrix-go/hystrix",
+    "github.com/afex/hystrix-go/hystrix/metric_collector",
     "github.com/eldad87/go-gin-prometheus",
     "github.com/evalphobia/logrus_sentry",
     "github.com/gin-contrib/gzip",
     "github.com/gin-gonic/gin",
     "github.com/heptiolabs/healthcheck",
     "github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins",
+    "github.com/jaegertracing/jaeger-lib/metrics/prometheus",
     "github.com/opentracing/opentracing-go",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/sirupsen/logrus",
     "github.com/spf13/viper",
     "github.com/uber/jaeger-client-go",
-    "github.com/uber/jaeger-client-go/config",
     "github.com/weaveworks/promrus",
     "golang.org/x/net/context",
   ]

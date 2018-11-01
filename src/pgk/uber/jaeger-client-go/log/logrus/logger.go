@@ -4,7 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Logger is an adapter from zap Logger to jaeger-lib Logger.
+// Logger is an adapter from Jaeger Logger to Logrus.
 type Logger struct {
 	logger *log.Logger
 }
