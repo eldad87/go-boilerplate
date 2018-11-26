@@ -1,56 +1,60 @@
 package gin
 
 import (
-	"github.com/RichardKnop/machinery/v1"
-	gintracing "github.com/eldad87/go-boilerplate/src/pgk/bose/go-gin-opentracing"
-	"github.com/eldad87/go-boilerplate/src/pgk/machinery/v1/tasks"
+	gintracing "github.com/eldad87/go-boilerplate/src/pkg/bose/go-gin-opentracing"
+	"github.com/eldad87/go-boilerplate/src/pkg/task/producer"
+
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
 
-func NewEcho(logger *log.Logger, server *machinery.Server) *Echo {
-	return &Echo{logger: logger, server: server}
+func NewEcho(logger *log.Logger, producer producer.Producer) *Echo {
+	return &Echo{logger: logger, producer: producer}
 }
 
 type Echo struct {
-	logger *log.Logger
-	server *machinery.Server
+	logger   *log.Logger
+	producer producer.Producer
 }
 
 func (e *Echo) Repeat(c *gin.Context) {
-	sig, err := tasks.NewSignature("repeat", "hello")
+	// Set Req's span as parent, pass it along to Machinery -> Worker
+	ctx := opentracing.ContextWithSpan(context.Background(), gintracing.GetSpan(c))
+	options := map[string]interface{}{} // Yeah, I can use nil - but its an example. This is how you can inject options
+	req, err := e.producer.NewRequest("repeat", options, "hello")
 	if err != nil {
 		e.logger.Error(err.Error())
 		c.JSON(500, gin.H{})
 		return
 	}
 
-	// Set Req's span as parent, pass it along to Machinery -> Worker
-	ctx := opentracing.ContextWithSpan(context.Background(), gintracing.GetSpan(c))
-	res, err := e.server.SendTaskWithContext(ctx, sig)
+	res, err := e.producer.Produce(req, map[string]interface{}{"ctx": ctx})
 	if err != nil {
 		e.logger.Error(err.Error())
-		c.JSON(501, gin.H{})
+		c.JSON(500, gin.H{})
 		return
 	}
 
-	code := 200
-	if res.GetState().IsFailure() {
+	code := 500
+	if res.IsFailure() {
 		code = 401
-	} else if res.GetState().IsSuccess() {
+	} else if res.IsSuccess() {
 		code = 201
 	}
 
 	msg := "Hello"
-	if res.GetState().IsCompleted() {
+	if res.IsCompleted() {
 		msg = "Done"
 	}
+
+	resArr, err := res.Result()
 
 	// Expect to see 201/Done
 	c.JSON(code, gin.H{
 		"message": msg,
-		"results": res.GetState().Results,
+		"results": resArr,
+		"error":   err,
 	})
 }

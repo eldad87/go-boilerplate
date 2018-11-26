@@ -10,11 +10,25 @@ services:
   app:
     environment:
       - APP_NAME=boilerplate
+      - APP_REQUEST_TIMEOUT=500
+      - APP_REQUEST_MAX__CONN=30
+      - APP_REQUEST_MAX__VOL_THRESHOLD=20
+      - APP_REQUEST_MAX__SLEEP__WINDOW=5000
+      - APP_REQUEST_MAX__ERR_PER_THRESHOLD=50
       - BUILD_ENV=development
       - LOG_LEVEL=debug
       - DATABASE_DRIVER=mysql
       - DATABASE_DSN=root:password@tcp(127.0.0.1:3306)/boilerplate
       # Producer & Consumer
+      ## Broker Producer limitation
+      - MACHINERY_BROKER_RETRIES=2
+      - MACHINERY_BROKER_RETRY__DELAY=50
+      - MACHINERY_BROKER_TIMEOUT=100
+      - MACHINERY_BROKER_MAX_CONN=100
+      - MACHINERY_BROKER_VOL_THRESHOLD=20
+      - MACHINERY_BROKER_SLEEP__WINDOW=5000
+      - MACHINERY_BROKER_ERR_PER_THRESHOLD=50
+      ## Other
       - MACHINERY_BROKER__DSN=amqp://rabbitmq:rabbitmq@rabbit:5672
       - MACHINERY_DEFAULT__QUEUE=boilerplate
       - MACHINERY_RESULT__BACKEND__DSN=redis://redis:6379

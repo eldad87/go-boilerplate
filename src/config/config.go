@@ -16,7 +16,7 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("app.request.max_conn", 10)
 	conf.SetDefault("app.request.vol_threshold", 20)
 	conf.SetDefault("app.request.sleep_window", 5000)
-	conf.SetDefault("app.request.err_percent_threshold", 50)
+	conf.SetDefault("app.request.err_per_threshold", 50)
 
 	// Defaults: Monitoring
 	conf.SetDefault("log.level", "debug")
@@ -36,6 +36,15 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Defaults: Machinery
 	conf.SetDefault("machinery.broker_dsn", "")
+
+	conf.SetDefault("machinery.broker.retries", 2)
+	conf.SetDefault("machinery.broker.retry_delay", 10)
+	conf.SetDefault("machinery.broker.timeout", 100)
+	conf.SetDefault("machinery.broker.max_conn", 10)
+	conf.SetDefault("machinery.broker.vol_threshold", 20)
+	conf.SetDefault("machinery.broker.sleep_window", 5000)
+	conf.SetDefault("machinery.broker.err_per_threshold", 50)
+
 	conf.SetDefault("machinery.default_queue", "")
 	conf.SetDefault("machinery.result_backend_dsn", "")
 	conf.SetDefault("machinery.exchange", "")
@@ -51,7 +60,7 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.AutomaticEnv()                                              // Automatically load Env variables
 
 	// Conf Files
-	//conf.SetConfigType("yaml") 					// We're using yaml
+	//conf.SetConfigType("yaml") 				// We're using yaml
 	conf.SetConfigName(env)                   // Search for a config file that matches our environment
 	conf.AddConfigPath("./src/config/" + env) // look for config in the working directory
 	conf.ReadInConfig()                       // Find and read the config file

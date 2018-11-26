@@ -3,7 +3,8 @@ package main
 import (
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
-	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pgk/gin/middleware"
+	reHystrix "github.com/eldad87/go-boilerplate/src/pkg/concurrency/hystrix"
+	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pkg/gin/middleware"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
 
 	jaegerprom "github.com/jaegertracing/jaeger-lib/metrics/prometheus"
@@ -11,24 +12,25 @@ import (
 
 	"github.com/Bose/go-gin-opentracing"
 	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
-	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pgk/uber/jaeger-client-go/log/logrus"
-	jaeger "github.com/uber/jaeger-client-go"
+	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pkg/uber/jaeger-client-go/log/logrus"
+	"github.com/uber/jaeger-client-go"
 
-	machinery "github.com/RichardKnop/machinery/v1"
+	"github.com/RichardKnop/machinery/v1"
 	machineryConfigBuilder "github.com/RichardKnop/machinery/v1/config"
 	machineryLog "github.com/RichardKnop/machinery/v1/log"
+	machineryProducer "github.com/eldad87/go-boilerplate/src/pkg/task/producer/machinery"
 
-	"github.com/eldad87/go-gin-prometheus"
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/gin-contrib/gzip"
+	"github.com/zsais/go-gin-prometheus"
 
-	ginlogrus "github.com/Bose/go-gin-logrus"
+	"github.com/Bose/go-gin-logrus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/gin-gonic/gin"
 
-	healthcheck "github.com/heptiolabs/healthcheck"
+	"github.com/heptiolabs/healthcheck"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/promrus"
 
@@ -67,6 +69,9 @@ func main() {
 	log.SetOutput(os.Stdout)
 	logLevel, _ := log.ParseLevel(conf.GetString("log.level"))
 	log.SetLevel(logLevel)
+	if "development" == conf.GetString("build.env") {
+		conf.Debug()
+	}
 
 	// Prometheus
 	hook := promrus.MustNewPrometheusHook()
@@ -129,15 +134,6 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Configure hystrix, later enforced by a middleware (HystrixHandler)
-	hystrix.ConfigureCommand(conf.GetString("app.name"), hystrix.CommandConfig{
-		Timeout:                conf.GetInt("app.request.timeout"),
-		MaxConcurrentRequests:  conf.GetInt("app.request.max_conn"),
-		RequestVolumeThreshold: conf.GetInt("app.request.vol_threshold"),
-		SleepWindow:            conf.GetInt("app.request.sleep_window"),
-		ErrorPercentThreshold:  conf.GetInt("app.request.err_percent_threshold"),
-	})
-
 	ginRouter.Use(ginlogrus.WithTracing(log.StandardLogger(),
 		false,
 		time.RFC3339,
@@ -146,7 +142,13 @@ func main() {
 		[]byte("uber-trace-id"),
 		[]byte("tracing-context")),
 		gin.Recovery(),
-		ginHystrixMiddleware.HystrixHandler(conf.GetString("app.name")),
+		ginHystrixMiddleware.HystrixHandler(conf.GetString("app.name"), hystrix.CommandConfig{
+			Timeout:                conf.GetInt("app.request.timeout"),
+			MaxConcurrentRequests:  conf.GetInt("app.request.max_conn"),
+			RequestVolumeThreshold: conf.GetInt("app.request.vol_threshold"),
+			SleepWindow:            conf.GetInt("app.request.sleep_window"),
+			ErrorPercentThreshold:  conf.GetInt("app.request.err_per_threshold"),
+		}),
 		gzip.Gzip(gzip.BestCompression))
 
 	// Health check support
@@ -194,6 +196,17 @@ func main() {
 	// Configure machinery to use logrus
 	machineryLog.Set(log.StandardLogger())
 
+	// Produce
+	producer := machineryProducer.NewProducer(server,
+		hystrix.CommandConfig{
+			Timeout:                conf.GetInt("machinery.broker.timeout"),
+			MaxConcurrentRequests:  conf.GetInt("machinery.broker.max_conn"),
+			RequestVolumeThreshold: conf.GetInt("machinery.broker.vol_threshold"),
+			SleepWindow:            conf.GetInt("machinery.broker.sleep_window"),
+			ErrorPercentThreshold:  conf.GetInt("machinery.broker.err_per_threshold"),
+		},
+		reHystrix.RetryConfig{Attempts: conf.GetInt("machinery.broker.retries"), Delay: conf.GetDuration("machinery.broker.retry_delay")})
+
 	// Start our consumer
 	if 1 == conf.GetInt("machinery.consumer.enable") {
 		server.RegisterTask("repeat", func(str string) (string, error) {
@@ -213,7 +226,7 @@ func main() {
 	/*
 	 * Gin: Handlers
 	 * **************************** */
-	echo := ginController.NewEcho(log.StandardLogger(), server)
+	echo := ginController.NewEcho(log.StandardLogger(), producer)
 	ginRouter.GET("/echo", echo.Repeat)
 
 	ginRouter.GET("/ping", func(c *gin.Context) {
