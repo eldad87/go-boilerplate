@@ -64,6 +64,7 @@ func main() {
 	 * PreRequisite: Health Check + Expose status Prometheus metrics gauge
 	 * **************************** */
 	healthChecker := healthcheck.NewMetricsHandler(prometheus.DefaultRegisterer, "health_check")
+	healthChecker.AddLivenessCheck("Goroutine Threshold", healthcheck.GoroutineCountCheck(conf.GetInt("health_check.goroutine_threshold")))
 
 	/*
 	 * PreRequisite: Logrus
@@ -145,7 +146,7 @@ func main() {
 		[]byte("uber-trace-id"),
 		[]byte("tracing-context")),
 		gin.Recovery(),
-		ginHystrixMiddleware.HystrixHandler(conf.GetString("app.name"), hystrix.CommandConfig{
+		ginHystrixMiddleware.HystrixHandler("http", hystrix.CommandConfig{
 			Timeout:                conf.GetInt("app.request.timeout"),
 			MaxConcurrentRequests:  conf.GetInt("app.request.max_conn"),
 			RequestVolumeThreshold: conf.GetInt("app.request.vol_threshold"),

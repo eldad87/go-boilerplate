@@ -8,6 +8,9 @@ log:
 sentry:
   dsn: https://67c018312d4d47978d223e80f4c2e896@sentry.io/1305039
 
+health_check:
+  goroutine_threshold: 100
+
 machinery:
   broker_dsn: amqp://[username:password@]@host[:port]
   default_queue: boilerplate

@@ -23,6 +23,7 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("health_check.route.group", "/health")
 	conf.SetDefault("health_check.route.live", "/live")
 	conf.SetDefault("health_check.route.ready", "/ready")
+	conf.SetDefault("health_check.goroutine_threshold", 100) // Alert when there are more than X Goroutine
 
 	// Defaults: Prometheus
 	conf.SetDefault("prometheus.route", "/metrics")

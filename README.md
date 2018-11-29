@@ -104,7 +104,7 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
   - [ ] Add configuration support for all backends (including healthchecks)
 - [ ] Logrus [Slack report](https://github.com/johntdyer/slackrus)
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
-- [x] Healtcheck for Redis and AMQP
+- [x] Healtcheck for Redis, AMQP and Goroutine Threshold
 - [ ] Protect monitoring HTTP entrypoints (http://localhost/metrics)
 - [ ] Unit-test coverage
 - [ ] Prometheus server
