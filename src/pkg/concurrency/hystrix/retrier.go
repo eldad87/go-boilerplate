@@ -13,22 +13,22 @@ type RetryConfig struct {
 	Delay    time.Duration
 }
 
-func ReHystrix(fn func() error, breakerName string, reConf RetryConfig) chan error {
-	return hystrix.Go(breakerName, func() error {
+func ReHystrix(fn func() error, circuitName string, reConf RetryConfig) chan error {
+	return hystrix.Go(circuitName, func() error {
 		r := retrier.New(retrier.ConstantBackoff(reConf.Attempts, reConf.Delay*time.Millisecond), nil)
 		err := r.Run(func() error {
 			return fn()
 		})
 		return err
 	}, func(err error) error {
-		circuit, _, _ := hystrix.GetCircuit(breakerName)
-		log.Error("In fallback function for breaker %v, Circuit state is: %v, error: %v",
-			breakerName, circuit.IsOpen(), err.Error())
+		circuit, _, _ := hystrix.GetCircuit(circuitName)
+		log.Error("In fallback function for circuit %v, Circuit state is: %v, error: %v",
+			circuitName, circuit.IsOpen(), err.Error())
 		return err
 	})
 }
 
-func ReHystrixWithRes(fn func() (interface{}, error), breakerName string, reConf RetryConfig) (interface{}, error) {
+func ReHystrixWithRes(fn func() (interface{}, error), circuitName string, reConf RetryConfig) (interface{}, error) {
 	output := make(chan interface{})
 
 	errors := ReHystrix(func() error {
@@ -37,11 +37,11 @@ func ReHystrixWithRes(fn func() (interface{}, error), breakerName string, reConf
 			output <- res
 		}
 		return err
-	}, breakerName, reConf)
+	}, circuitName, reConf)
 
 	select {
 	case out := <-output:
-		log.Debug("Call in breaker %v successful", breakerName)
+		log.Debug("Call in circuit %v successful", circuitName)
 		return out, nil
 	case err := <-errors:
 		return false, err

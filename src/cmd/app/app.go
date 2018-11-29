@@ -30,12 +30,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	healthChecks "github.com/eldad87/go-boilerplate/src/pkg/healthcheck"
 	"github.com/heptiolabs/healthcheck"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/promrus"
 
 	"github.com/eldad87/go-boilerplate/src/config"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -55,10 +57,11 @@ func main() {
 	collector := plugins.InitializePrometheusCollector(plugins.PrometheusCollectorConfig{
 		Namespace: conf.GetString("app.name"),
 	})
+	// Expose CB Prometheus metrics
 	metricCollector.Registry.Register(collector.NewPrometheusCollector)
 
 	/*
-	 * PreRequisite: Health Check + Prometheus gauge
+	 * PreRequisite: Health Check + Expose status Prometheus metrics gauge
 	 * **************************** */
 	healthChecker := healthcheck.NewMetricsHandler(prometheus.DefaultRegisterer, "health_check")
 
@@ -73,7 +76,7 @@ func main() {
 		conf.Debug()
 	}
 
-	// Prometheus
+	// Expose log level Prometheus metrics
 	hook := promrus.MustNewPrometheusHook()
 	log.AddHook(hook)
 
@@ -98,10 +101,10 @@ func main() {
 	 * **************************** */
 	// Add jaeger metrics and reporting to prometheus route
 	logAdapt := jaegerLogrus.NewLogger(log.StandardLogger())
-	factory := jaegerprom.New()
+	factory := jaegerprom.New() // By default uses prometheus.DefaultRegisterer
 	metrics := jaeger.NewMetrics(factory, map[string]string{"lib": "jaeger"})
 
-	//Add tracing to application
+	// Add tracing to application
 	transport, err := jaeger.NewUDPTransport(conf.GetString("opentracing.jaeger.host")+":"+conf.GetString("opentracing.jaeger.port"), 0)
 	if err != nil {
 		healthChecker.AddReadinessCheck("jaeger", func() error { return err }) // Permanent, take us down.
@@ -151,14 +154,14 @@ func main() {
 		}),
 		gzip.Gzip(gzip.BestCompression))
 
-	// Health check support
+	// Health check handlers
 	healthRoute := ginRouter.Group(conf.GetString("health_check.route.group"))
 	{ // Is there a better way?
 		healthRoute.GET(conf.GetString("health_check.route.live"), gin.WrapF(healthChecker.LiveEndpoint))
 		healthRoute.GET(conf.GetString("health_check.route.ready"), gin.WrapF(healthChecker.ReadyEndpoint))
 	}
 
-	// Prometheus support
+	// Prometheus handlers
 	ginprometheus.NewPrometheus("gin")
 	h := promhttp.InstrumentMetricHandler(
 		prometheus.DefaultRegisterer, promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{DisableCompression: true}),
@@ -167,7 +170,7 @@ func main() {
 		h.ServeHTTP(c.Writer, c.Request)
 	})
 
-	// OpenTracing
+	// OpenTracing middleware
 	p := ginopentracing.OpenTracer([]byte(conf.GetString("app.name") + "-"))
 	ginRouter.Use(p)
 
@@ -195,6 +198,22 @@ func main() {
 
 	// Configure machinery to use logrus
 	machineryLog.Set(log.StandardLogger())
+
+	// Healthcheck: Redis
+	if strings.HasPrefix(conf.GetString("machinery.result_backend_dsn"), "redis") {
+		healthChecker.AddLivenessCheck("Redis",
+			healthcheck.Async(
+				healthChecks.RedisCheck(conf.GetString("machinery.result_backend_dsn"), time.Second),
+				time.Second*5)) // Check interval
+	}
+
+	// Healthcheck: AMQP
+	if strings.HasPrefix(conf.GetString("machinery.broker_dsn"), "amqp") {
+		healthChecker.AddLivenessCheck("AMQP",
+			healthcheck.Async(
+				healthChecks.AMQPCheck(conf.GetString("machinery.broker_dsn"), time.Second),
+				time.Second*5)) // Check interval
+	}
 
 	// Produce
 	producer := machineryProducer.NewProducer(server,

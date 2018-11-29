@@ -1,4 +1,4 @@
-# Go-Connect
+# Go-Boilerplate
 An easy to use, extensible boilerplate for Go applications.
 
 # Motivation
@@ -99,12 +99,12 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
 - [ ] Machinery: 
   - [x] Producer and Result interface/wrapper
   - [x] Producer: Hystrix (Conn, CB, TO)
+  - [ ] Consumer: task registration pattern
   - [ ] Machinery Redis result backend limits/config (MaxActive, MaxIdle, MaxConnLifetime etc.)
-  - [ ] Consumer/AsyncRes: Hystrix (Conn, CB, TO), throttling/Rate Limit (Juju). KIM: Redis already ~protected-ish
-  - [ ] Easier produce/consume pattern
-  - [ ] Add configuration support for all backends
+  - [ ] Add configuration support for all backends (including healthchecks)
 - [ ] Logrus [Slack report](https://github.com/johntdyer/slackrus)
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
+- [x] Healtcheck for Redis and AMQP
 - [ ] Protect monitoring HTTP entrypoints (http://localhost/metrics)
 - [ ] Unit-test coverage
 - [ ] Prometheus server
