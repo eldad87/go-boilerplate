@@ -1,0 +1,26 @@
+syntax = "proto3";
+package pb;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+
+service VisitService {
+    // Simple return the visit id
+    rpc Get(ID) returns (Visit) {
+        option (google.api.http) = {
+          get: "/v1/visit/{id}"
+        };
+    }
+    // Update/Create a device
+    rpc Set(Visit) returns (Visit) {}
+}
+
+message ID {
+    int32 id = 1;
+};
+
+message Visit {
+    int32 id = 1;
+    google.protobuf.Timestamp created_at = 2;
+}

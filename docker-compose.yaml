@@ -10,6 +10,9 @@ services:
   app:
     environment:
       - APP_NAME=boilerplate
+      - APP_PORT=8080
+      - APP_GRPC_PORT=8082
+      - APP_GRPC_HTTP__ROUTE__PREFIX=/v1
       - APP_REQUEST_TIMEOUT=500
       - APP_REQUEST_MAX__CONN=30
       - APP_REQUEST_MAX__VOL_THRESHOLD=20
@@ -18,7 +21,7 @@ services:
       - BUILD_ENV=development
       - LOG_LEVEL=debug
       - DATABASE_DRIVER=mysql
-      - DATABASE_DSN=root:password@tcp(127.0.0.1:3306)/boilerplate
+      - DATABASE_DSN=root:root@tcp(127.0.0.1:3306)/boilerplate
       # Producer & Consumer
       ## Broker Producer limitation
       - MACHINERY_BROKER_RETRIES=2
@@ -47,6 +50,9 @@ services:
       args:
         build_env: 'development'
         app_port: 8080
+        app_grpc_port: 8082
+        protobuf_release_tag: '3.6.1'
+        proto_gen_release_tag: '1.2.0'
     security_opt:
       - seccomp:unconfined
     volumes:
@@ -56,10 +62,21 @@ services:
       - ./Gopkg.toml:/go/src/github.com/eldad87/go-boilerplate/Gopkg.toml
     ports:
       - "8080:8080"
+      - "8082:8082"
     depends_on:
       - redis
       - rabbit
       - db
+  swagger:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8081:8080"
+    environment:
+      - API_URL=http://localhost:8080/swaggerui/swagger.json
+    expose:
+      - 8080
+    depends_on:
+      - app
   redis:
     image: redis
     expose:
@@ -76,7 +93,7 @@ services:
     environment:
       - REDIS_HOSTS=local:redis:6379
     ports:
-      - "8082:8081"
+      - "8083:8081"
     links:
       - redis
     depends_on:
@@ -113,3 +130,13 @@ services:
     tty: true
     volumes:
       - ./data/rabbitmq:/var/lib/rabbitmq
+  db:
+    image: mysql:5.7
+    volumes:
+      - ./data/mysql/:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: boilerplate
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user

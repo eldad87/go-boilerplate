@@ -1,19 +1,22 @@
 package main
 
 import (
+	"github.com/Bose/go-gin-opentracing"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
+	"github.com/eldad87/go-boilerplate/src/app"
+	"github.com/eldad87/go-boilerplate/src/app/proto"
+	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
 	reHystrix "github.com/eldad87/go-boilerplate/src/pkg/concurrency/hystrix"
 	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pkg/gin/middleware"
+	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pkg/uber/jaeger-client-go/log/logrus"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
-
 	jaegerprom "github.com/jaegertracing/jaeger-lib/metrics/prometheus"
 	"github.com/opentracing/opentracing-go"
-
-	"github.com/Bose/go-gin-opentracing"
-	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
-	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pkg/uber/jaeger-client-go/log/logrus"
 	"github.com/uber/jaeger-client-go"
+	"google.golang.org/grpc"
+	"net"
 
 	"github.com/RichardKnop/machinery/v1"
 	machineryConfigBuilder "github.com/RichardKnop/machinery/v1/config"
@@ -28,6 +31,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+
 	"github.com/gin-gonic/gin"
 
 	healthChecks "github.com/eldad87/go-boilerplate/src/pkg/healthcheck"
@@ -35,6 +41,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/promrus"
 
+	"context"
 	"github.com/eldad87/go-boilerplate/src/config"
 	"os"
 	"strings"
@@ -131,6 +138,12 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 
 	/*
+	 * PreRequisite: Database
+	 * **************************** */
+	db, err := gorm.Open("mssql", "sqlserver://username:password@localhost:1433?database=dbname")
+	defer db.Close()
+
+	/*
 	 * PreRequisite: Gin
 	 * **************************** */
 	ginRouter := gin.New()
@@ -153,7 +166,15 @@ func main() {
 			SleepWindow:            conf.GetInt("app.request.sleep_window"),
 			ErrorPercentThreshold:  conf.GetInt("app.request.err_per_threshold"),
 		}),
-		gzip.Gzip(gzip.BestCompression))
+		gzip.Gzip(gzip.BestCompression),
+		// a workaround in order to support swagger running on a different port/domain
+		func(c *gin.Context) {
+			if strings.HasPrefix(c.Request.RequestURI, "/swaggerui/swagger.json") {
+				c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+				c.Header("Access-Control-Allow-Origin", "*")
+			}
+		},
+	)
 
 	// Health check handlers
 	healthRoute := ginRouter.Group(conf.GetString("health_check.route.group"))
@@ -242,6 +263,46 @@ func main() {
 			}
 		}()
 	}
+
+	/*
+	 * PreRequisite: gRPC
+	 * **************************** */
+	lis, err := net.Listen("tcp", ":"+conf.GetString("app.grpc.port"))
+	if err != nil || lis == nil {
+		log.Error("gRPC failed to listen: %v", err)
+	}
+	log.Println("gRPC Listening on:", conf.GetString("app.grpc.port"))
+	grpcServer := grpc.NewServer()
+	defer grpcServer.GracefulStop()
+
+	// Visit Service
+	visitService := pb.VisitService{VisitService: &app.VisitServiceDemo{}}
+	pb.RegisterVisitServiceServer(grpcServer, &visitService)
+
+	// Start listening to gRPC requests
+	go func() {
+		log.Info("gRPC start to listen on: ", conf.GetString("app.grpc.port"))
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Error("gRPC failed to serve: %v", err)
+			healthChecker.AddReadinessCheck("gRPC", func() error { return err }) // Permanent, take us down.
+		}
+	}()
+
+	/*
+	 * gRPC: gRPC as HTTP Gateway
+	 * **************************** */
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err = pb.RegisterVisitServiceHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
+	if err != nil {
+		log.Error("failed to register Visit Service: %v", err)
+	}
+	ginRouter.Any(conf.GetString("app.grpc.http_route_prefix")+"/*any", gin.WrapF(mux.ServeHTTP))
+	// Expose our Swagger-UI .json file
+	ginRouter.StaticFile("/swaggerui/swagger.json", "src/app/proto/visit_service.swagger.json")
 
 	/*
 	 * Gin: Handlers

@@ -96,6 +96,9 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
 - [x] Logrus Prometheus message type count
 - [x] Gin rate limit
 - [x] Jaeger/OT + Prometheus
+- [x] gRPC, HTTP Gateway and Swagger-UI
+- [ ] gRPC opentracing and instrumentation
+- [ ] Split gRPC, gRPC HTTP Gateway, health checks and Gin into different ports it will allow the usage of different auth methods
 - [ ] Machinery: 
   - [x] Producer and Result interface/wrapper
   - [x] Producer: Hystrix (Conn, CB, TO)
@@ -147,7 +150,7 @@ sudo docker run -d -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:55
  -p 16686:16686 -p 14268:14268 --name jaeger jaegertracing/all-in-one:latest
 ```
 To explore the traces, navigate to http://localhost:16686
-Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander at http://localhost:8082/
+Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander at http://localhost:8083/
 
 ### Verification
  To verify that your project is running correctly, simply browse the following:
@@ -155,6 +158,8 @@ Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander 
   - http://localhost/health/ready - Kubernetes readiness
   - http://localhost/metrics - Prometheus instrumentation
   - http://localhost/ping - echo `{"message":"pong"}
+  - http:/http://localhost:8081/ - Swagger UI
+  - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
 Or, check the logs. Logs are writing STDOUT in a JSON format.
 
 

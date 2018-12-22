@@ -11,6 +11,8 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	// Defaults: App
 	conf.SetDefault("app.name", "default")
 	conf.SetDefault("app.port", "8080")
+	conf.SetDefault("app.grpc.port", "8082")
+	conf.SetDefault("app.grpc.http_route_prefix", "/v1")
 
 	conf.SetDefault("app.request.timeout", 100)
 	conf.SetDefault("app.request.max_conn", 10)
