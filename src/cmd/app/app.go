@@ -9,6 +9,7 @@ import (
 	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
 	reHystrix "github.com/eldad87/go-boilerplate/src/pkg/concurrency/hystrix"
 	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pkg/gin/middleware"
+	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
 	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pkg/uber/jaeger-client-go/log/logrus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
@@ -294,6 +295,8 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	// Customize our error response
+	runtime.HTTPError = grpcGatewayError.CustomHTTPError
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	err = pb.RegisterVisitServiceHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
