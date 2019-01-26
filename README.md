@@ -9,9 +9,11 @@ Which in turn, leads to a robust and resilient product.
 Dockeriezed, Production grade, easy to (re)use boilerplate for Go applications. Based on Ashley [McNamara + Brian Ketelsen. Go best practices.](https://www.youtube.com/watch?v=MzTcsI6tn-0 "McNamara + Brian Ketelsen. Go best practices"), [Ben Johnson. Standard Package Layout](https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 "Ben Johnson. Standard Package Layout"),[ golang-standards]( https://github.com/golang-standards/project-layout " golang-standard") and much more.
 
 # Features
-- [Gin](https://github.com/gin-gonic/gin "Gin") - HTTP web framework with smashing performance.
-- [Machinery](https://github.com/RichardKnop/machinery "Machinery") -  asynchronous task queue/job queue based on distributed message passing.
-- [Logrus](https://github.com/sirupsen/logrus "Logrus") - Structured, pluggable logging for Go.
+- [gRPC](https://grpc.io/ "gRPC") - A high-performance, open-source universal RPC framework.
+- [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway/ "gRPC-Gateway") - gRPC to JSON proxy generator following the gRPC HTTP spec.
+- [OpenAPI](https://github.com/grpc-ecosystem/grpc-gateway/ "gRPC-Gateway") - Online Documentation for our gRPC-Gateway APIs.
+- [Machinery](https://github.com/RichardKnop/machinery "Machinery") -  An asynchronous task queue/job queue based on distributed message passing.
+- [Zap](https://github.com/uber-go/zap "Zap") - Blazing fast, structured, leveled logging in Go
 - [Prometheus](github.com/prometheus/client_golang "Prometheus") -  Instrumentation
 - [Health Check](https://github.com/heptiolabs/healthcheck "Health Check") - Implementing Kubernetes liveness and readiness probe handlers
 - And much more!
