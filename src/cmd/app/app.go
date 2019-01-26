@@ -2,27 +2,29 @@ package main
 
 import (
 	"github.com/Bose/go-gin-opentracing"
+	"github.com/RichardKnop/machinery/v1"
+	machineryConfigBuilder "github.com/RichardKnop/machinery/v1/config"
+	machineryLog "github.com/RichardKnop/machinery/v1/log"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
 	"github.com/eldad87/go-boilerplate/src/app"
 	"github.com/eldad87/go-boilerplate/src/app/proto"
 	ginController "github.com/eldad87/go-boilerplate/src/internal/http/gin"
+	gintracing "github.com/eldad87/go-boilerplate/src/pkg/bose/go-gin-opentracing"
 	reHystrix "github.com/eldad87/go-boilerplate/src/pkg/concurrency/hystrix"
 	ginHystrixMiddleware "github.com/eldad87/go-boilerplate/src/pkg/gin/middleware"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
+	machineryProducer "github.com/eldad87/go-boilerplate/src/pkg/task/producer/machinery"
 	jaegerLogrus "github.com/eldad87/go-boilerplate/src/pkg/uber/jaeger-client-go/log/logrus"
+	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
 	jaegerprom "github.com/jaegertracing/jaeger-lib/metrics/prometheus"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"net"
-
-	"github.com/RichardKnop/machinery/v1"
-	machineryConfigBuilder "github.com/RichardKnop/machinery/v1/config"
-	machineryLog "github.com/RichardKnop/machinery/v1/log"
-	machineryProducer "github.com/eldad87/go-boilerplate/src/pkg/task/producer/machinery"
 
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/gin-contrib/gzip"
@@ -44,6 +46,7 @@ import (
 
 	"context"
 	"github.com/eldad87/go-boilerplate/src/config"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -158,7 +161,7 @@ func main() {
 		true,
 		"trace-id",
 		[]byte("uber-trace-id"),
-		[]byte("tracing-context")),
+		[]byte(gintracing.GetSpanTraceID())),
 		gin.Recovery(),
 		ginHystrixMiddleware.HystrixHandler("http", hystrix.CommandConfig{
 			Timeout:                conf.GetInt("app.request.timeout"),
@@ -273,7 +276,15 @@ func main() {
 		log.Error("gRPC failed to listen: %v", err)
 	}
 	log.Println("gRPC Listening on:", conf.GetString("app.grpc.port"))
-	grpcServer := grpc.NewServer()
+
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor(grpc_opentracing.WithTracer(tracer))),
+		grpc.StreamInterceptor(grpc_opentracing.StreamServerInterceptor(grpc_opentracing.WithTracer(tracer))),
+
+		//		grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)),
+		//		grpc.StreamInterceptor(otgrpc.OpenTracingStreamServerInterceptor(tracer)),
+	)
+
 	defer grpcServer.GracefulStop()
 
 	// Visit Service
@@ -297,13 +308,20 @@ func main() {
 	defer cancel()
 	// Customize our error response
 	runtime.HTTPError = grpcGatewayError.CustomHTTPError
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
+	annotators := []annotator{injectHeadersIntoMetadata}
+	mux := runtime.NewServeMux(runtime.WithMetadata(chainGrpcAnnotators(annotators...)))
+
+	opts := []grpc.DialOption{
+		grpc.WithInsecure(),
+		//grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor(grpc_opentracing.WithTracer(tracer))),
+		//grpc.WithStreamInterceptor(grpc_opentracing.StreamClientInterceptor(grpc_opentracing.WithTracer(tracer))),
+	}
+
 	err = pb.RegisterVisitServiceHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
 	if err != nil {
 		log.Error("failed to register Visit Service: %v", err)
 	}
-	ginRouter.Any(conf.GetString("app.grpc.http_route_prefix")+"/*any", gin.WrapF(mux.ServeHTTP))
+	ginRouter.Any(conf.GetString("app.grpc.http_route_prefix")+"/*any", gintracing.WarpF(mux.ServeHTTP))
 	// Expose our Swagger-UI .json file
 	ginRouter.StaticFile("/swaggerui/swagger.json", "src/app/proto/visit_service.swagger.json")
 
@@ -321,4 +339,42 @@ func main() {
 
 	// Listen for incoming HTTP requests
 	ginRouter.Run(":" + conf.GetString("app.port"))
+}
+
+const (
+	prefixTracerState  = "x-b3-"
+	zipkinTraceID      = prefixTracerState + "traceid"
+	zipkinSpanID       = prefixTracerState + "spanid"
+	zipkinParentSpanID = prefixTracerState + "parentspanid"
+	zipkinSampled      = prefixTracerState + "sampled"
+	zipkinFlags        = prefixTracerState + "flags"
+)
+
+var otHeaders = []string{
+	zipkinTraceID,
+	zipkinSpanID,
+	zipkinParentSpanID,
+	zipkinSampled,
+	zipkinFlags}
+
+func injectHeadersIntoMetadata(ctx context.Context, req *http.Request) metadata.MD {
+	pairs := []string{}
+	for _, h := range otHeaders {
+		if v := req.Header.Get(h); len(v) > 0 {
+			pairs = append(pairs, h, v)
+		}
+	}
+	return metadata.Pairs(pairs...)
+}
+
+type annotator func(context.Context, *http.Request) metadata.MD
+
+func chainGrpcAnnotators(annotators ...annotator) annotator {
+	return func(c context.Context, r *http.Request) metadata.MD {
+		mds := []metadata.MD{}
+		for _, a := range annotators {
+			mds = append(mds, a(c, r))
+		}
+		return metadata.Join(mds...)
+	}
 }

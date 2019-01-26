@@ -163,7 +163,7 @@ Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander 
   - http:/http://localhost:8081/ - Swagger UI
   - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
 Or, check the logs. Logs are writing STDOUT in a JSON format.
-
+http://localhost:16686/search
 
  ### Configuration
  TBD
