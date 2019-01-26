@@ -220,18 +220,23 @@ func main() {
 		}),
 	)
 
-	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
-	}
-
+	opts := []grpc.DialOption{grpc.WithInsecure()}
 	err = pb.RegisterVisitServiceHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
 	if err != nil {
 		logger.Sugar().Errorf("Failed to register Visit Service %+v", err)
 	}
 	http.HandleFunc(conf.GetString("app.grpc.http_route_prefix")+"/", muxHandlerFunc)
+	// Serve swagger.json
+	http.HandleFunc("/swaggerui/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+		// a workaround in order to support swagger running on a different port/domain
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		http.ServeFile(w, r, "src/app/proto/visit_service.swagger.json")
+	})
 
 	/*
 	 * Start listening for incoming HTTP requests
 	 * **************************** */
+	logger.Info("Starting..")
 	http.ListenAndServe(":"+conf.GetString("app.port"), nil)
 }

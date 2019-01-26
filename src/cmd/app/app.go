@@ -164,13 +164,6 @@ func main() {
 			ErrorPercentThreshold:  conf.GetInt("app.request.err_per_threshold"),
 		}),
 		gzip.Gzip(gzip.BestCompression),
-		// a workaround in order to support swagger running on a different port/domain
-		func(c *gin.Context) {
-			if strings.HasPrefix(c.Request.RequestURI, "/swaggerui/swagger.json") {
-				c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-				c.Header("Access-Control-Allow-Origin", "*")
-			}
-		},
 	)
 
 	// Health check handlers
