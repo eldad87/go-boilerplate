@@ -71,3 +71,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/Bose/go-gin-logrus"
+
+[[constraint]]
+  name = "go.uber.org/zap"
+  version = "1.9.1"

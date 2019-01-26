@@ -43,7 +43,7 @@ RUN go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-g
 Add src/ src/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./src/cmd/app/app.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./src/cmd/grpc/app.go
 
 # From scratch
 FROM scratch

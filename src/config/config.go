@@ -7,6 +7,7 @@ import (
 
 func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf := viper.New()
+	conf.SetDefault("environment", env)
 
 	// Defaults: App
 	conf.SetDefault("app.name", "default")

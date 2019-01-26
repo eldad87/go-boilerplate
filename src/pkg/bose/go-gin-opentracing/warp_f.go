@@ -19,6 +19,9 @@ func WarpF(f http.HandlerFunc) func(*gin.Context) {
 				ext.RPCServerOption(span.Context()),
 				grpcGatewayTag,
 			)
+			ext.HTTPMethod.Set(serverSpan, c.Request.Method)
+			ext.HTTPUrl.Set(serverSpan, c.Request.URL.String())
+
 			defer serverSpan.Finish()
 		} else {
 			// https://github.com/grpc-ecosystem/grpc-gateway/blob/master/docs/_docs/customizingyourgateway.md
@@ -33,6 +36,8 @@ func WarpF(f http.HandlerFunc) func(*gin.Context) {
 					grpcGatewayTag,
 				)
 				c.Request = c.Request.WithContext(opentracing.ContextWithSpan(c.Request.Context(), serverSpan))
+				ext.HTTPMethod.Set(serverSpan, c.Request.Method)
+				ext.HTTPUrl.Set(serverSpan, c.Request.URL.String())
 				defer serverSpan.Finish()
 			}
 		}

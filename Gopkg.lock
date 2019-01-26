@@ -238,25 +238,22 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
+  branch = "master"
+  digest = "1:8343eff771a8e5a4723738f3d5fbefb3522df7e6bb2befc933a292b8daf5f932"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
-    "protoc-gen-go/generator",
-    "protoc-gen-go/generator/internal/remap",
-    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/empty",
     "ptypes/struct",
     "ptypes/timestamp",
-    "ptypes/wrappers",
   ]
   pruneopts = ""
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  revision = "347cf4a86c1cb8d262994d8ef5924d4576c5b331"
 
 [[projects]]
   digest = "1:dcf8316121302735c0ac84e05f4686e3b34e284444435e9a206da48d8be18cb1"
@@ -299,7 +296,15 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:67fa7fe174716264688b0d1c69ee4bfa75191d311ff8080f4b06caffbcc17ba6"
+  digest = "1:e24dc5ef44694848785de507f439a24e9e6d96d7b43b8cf3d6cfa857aa1e2186"
+  name = "github.com/grpc-ecosystem/go-grpc-prometheus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c225b8c3b01faf2899099b768856a9e916e5087b"
+  version = "v1.2.0"
+
+[[projects]]
+  digest = "1:b563eec078077ba5cedc795462cbd6d7c75a106a4d2e3d02940093c80e28de28"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
     "runtime",
@@ -307,8 +312,8 @@
     "utilities",
   ]
   pruneopts = ""
-  revision = "719aaadb1a4f7b11606d454e266fe5c5f789796f"
-  version = "v1.6.3"
+  revision = "92583770e3f01b09a0d3e9bdf64321d8bebd48f2"
+  version = "v1.4.1"
 
 [[projects]]
   digest = "1:d14365c51dd1d34d5c79833ec91413bfbb166be978724f15701e17080dc06dec"
@@ -344,6 +349,14 @@
   pruneopts = ""
   revision = "c9374336e940ab6dbce79e82df7abad555e787ef"
   version = "v1.0.1"
+
+[[projects]]
+  digest = "1:941ab4973b3218a9a6d02d31734f5c762239eb538c0d702fff62d4037af8ab0a"
+  name = "github.com/jaegertracing/jaeger-client-go"
+  packages = ["log/zap"]
+  pruneopts = ""
+  revision = "1a782e2da844727691fef1757c72eb190c2909f0"
+  version = "v2.15.0"
 
 [[projects]]
   digest = "1:aa1598d34009b45ce74fdabdd25e4258d7923d1e1b418d4c98482e79607cb9b0"
@@ -674,6 +687,37 @@
   version = "v0.18.0"
 
 [[projects]]
+  digest = "1:74f86c458e82e1c4efbab95233e0cf51b7cc02dc03193be9f62cd81224e10401"
+  name = "go.uber.org/atomic"
+  packages = ["."]
+  pruneopts = ""
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
+
+[[projects]]
+  digest = "1:22c7effcb4da0eacb2bb1940ee173fac010e9ef3c691f5de4b524d538bd980f5"
+  name = "go.uber.org/multierr"
+  packages = ["."]
+  pruneopts = ""
+  revision = "3c4937480c32f4c13a875a1829af76c98ca3d40a"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:246f378f80fba6fcf0f191c486b6613265abd2bc0f2fa55a36b928c67352021e"
+  name = "go.uber.org/zap"
+  packages = [
+    ".",
+    "buffer",
+    "internal/bufferpool",
+    "internal/color",
+    "internal/exit",
+    "zapcore",
+  ]
+  pruneopts = ""
+  revision = "ff33455a0e382e8a81d14dd7c922020b6b5e7982"
+  version = "v1.9.1"
+
+[[projects]]
   branch = "master"
   digest = "1:efb97ebbd73c3a7068579327f5d98a17c09f6d8caf1fa3212c506e8bb78126b5"
   name = "golang.org/x/crypto"
@@ -904,10 +948,12 @@
     "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/gomodule/redigo/redis",
     "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing",
+    "github.com/grpc-ecosystem/go-grpc-prometheus",
     "github.com/grpc-ecosystem/grpc-gateway/runtime",
     "github.com/grpc-ecosystem/grpc-gateway/utilities",
     "github.com/heptiolabs/healthcheck",
     "github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins",
+    "github.com/jaegertracing/jaeger-client-go/log/zap",
     "github.com/jaegertracing/jaeger-lib/metrics/prometheus",
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/mysql",
@@ -923,6 +969,7 @@
     "github.com/uber/jaeger-client-go",
     "github.com/weaveworks/promrus",
     "github.com/zsais/go-gin-prometheus",
+    "go.uber.org/zap",
     "golang.org/x/net/context",
     "google.golang.org/genproto/googleapis/api/annotations",
     "google.golang.org/genproto/googleapis/rpc/errdetails",

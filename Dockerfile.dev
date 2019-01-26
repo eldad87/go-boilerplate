@@ -51,6 +51,6 @@ Add src/ src/
 RUN go get -u github.com/VojtechVitek/rerun/cmd/rerun
 
 # Run binary or hot-reload
-CMD rerun -watch ./ -ignore vendor bin -run go run ./src/cmd/app/app.go
+CMD rerun -watch ./ -ignore vendor bin -run go run ./src/cmd/grpc/app.go
 
 EXPOSE ${APP_GRPC_PORT} ${APP_PORT}
