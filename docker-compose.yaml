@@ -20,6 +20,8 @@ services:
       - APP_REQUEST_MAX__ERR_PER_THRESHOLD=50
       - BUILD_ENV=development
       - LOG_LEVEL=debug
+      - SENTRY_DSN=
+      - SENTRY_LOG__LEVEL=error
       - DATABASE_DRIVER=mysql
       - DATABASE_DSN=root:root@tcp(127.0.0.1:3306)/boilerplate
       # Producer & Consumer

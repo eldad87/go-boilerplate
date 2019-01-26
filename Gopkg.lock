@@ -81,6 +81,14 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:51b1c5e11a81badea466c1668471d51808f3bf9a52c6150db6bfc826c17bba93"
+  name = "github.com/TheZeroSlave/zapsentry"
+  packages = ["."]
+  pruneopts = ""
+  revision = "410ad1e37c78ec5b5560b1d43f1c3f680763f234"
+  version = "1.0.1"
+
+[[projects]]
   branch = "master"
   digest = "1:0ef07197f29c21ea0d5e3d0f686b5c7bed2e2c69cb8b4be6228d83ee9e4ed5ae"
   name = "github.com/afex/hystrix-go"
@@ -91,6 +99,25 @@
   ]
   pruneopts = ""
   revision = "fa1af6a1f4f56e0e50d427fe901cd604d8c6fb8a"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a74730e052a45a3fab1d310fdef2ec17ae3d6af16228421e238320846f2aaec8"
+  name = "github.com/alecthomas/template"
+  packages = [
+    ".",
+    "parse",
+  ]
+  pruneopts = ""
+  revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
+
+[[projects]]
+  branch = "master"
+  digest = "1:8483994d21404c8a1d489f6be756e25bfccd3b45d65821f25695577791a08e68"
+  name = "github.com/alecthomas/units"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
 
 [[projects]]
   digest = "1:1c036cced886ff485bd71bf8980c160655e9645a1d701c98fb6538c287da73b7"
@@ -287,7 +314,12 @@
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = [
     ".",
+    "logging",
+    "logging/zap",
+    "logging/zap/ctxzap",
+    "recovery",
     "tags",
+    "tags/zap",
     "tracing/opentracing",
     "util/metautils",
   ]
@@ -527,6 +559,7 @@
   packages = [
     "expfmt",
     "internal/bitbucket.org/ww/goautoneg",
+    "log",
     "model",
   ]
   pruneopts = ""
@@ -603,6 +636,17 @@
   packages = ["."]
   pruneopts = ""
   revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
+
+[[projects]]
+  branch = "master"
+  digest = "1:1aee53aa607410650cb30046e2584850c278c854848e104547f2e2eaf35eed8a"
+  name = "github.com/tchap/zapext"
+  packages = [
+    "types",
+    "zapsentry",
+  ]
+  pruneopts = ""
+  revision = "e61c0c8823393722ae09ce0faee42fa177088a4b"
 
 [[projects]]
   digest = "1:941ab4973b3218a9a6d02d31734f5c762239eb538c0d702fff62d4037af8ab0a"
@@ -774,6 +818,8 @@
   packages = [
     "unix",
     "windows",
+    "windows/registry",
+    "windows/svc/eventlog",
   ]
   pruneopts = ""
   revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
@@ -897,6 +943,14 @@
   version = "v1.17.0"
 
 [[projects]]
+  digest = "1:15d017551627c8bb091bde628215b2861bed128855343fdd570c62d08871f6e1"
+  name = "gopkg.in/alecthomas/kingpin.v2"
+  packages = ["."]
+  pruneopts = ""
+  revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
+  version = "v2.2.6"
+
+[[projects]]
   digest = "1:dd549e360e5a8f982a28c2bcbe667307ceffe538ed9afc7c965524f1ac285b3f"
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
@@ -937,16 +991,22 @@
     "github.com/RichardKnop/machinery/v1/config",
     "github.com/RichardKnop/machinery/v1/log",
     "github.com/RichardKnop/machinery/v1/tasks",
+    "github.com/TheZeroSlave/zapsentry",
     "github.com/afex/hystrix-go/hystrix",
     "github.com/afex/hystrix-go/hystrix/metric_collector",
     "github.com/eapache/go-resiliency/retrier",
     "github.com/evalphobia/logrus_sentry",
+    "github.com/getsentry/raven-go",
     "github.com/gin-contrib/gzip",
     "github.com/gin-gonic/gin",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/gomodule/redigo/redis",
+    "github.com/grpc-ecosystem/go-grpc-middleware",
+    "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap",
+    "github.com/grpc-ecosystem/go-grpc-middleware/recovery",
+    "github.com/grpc-ecosystem/go-grpc-middleware/tags",
     "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing",
     "github.com/grpc-ecosystem/go-grpc-prometheus",
     "github.com/grpc-ecosystem/grpc-gateway/runtime",
@@ -963,13 +1023,16 @@
     "github.com/opentracing/opentracing-go/ext",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
+    "github.com/prometheus/common/log",
     "github.com/sirupsen/logrus",
     "github.com/spf13/viper",
     "github.com/streadway/amqp",
+    "github.com/tchap/zapext/zapsentry",
     "github.com/uber/jaeger-client-go",
     "github.com/weaveworks/promrus",
     "github.com/zsais/go-gin-prometheus",
     "go.uber.org/zap",
+    "go.uber.org/zap/zapcore",
     "golang.org/x/net/context",
     "google.golang.org/genproto/googleapis/api/annotations",
     "google.golang.org/genproto/googleapis/rpc/errdetails",

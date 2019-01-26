@@ -51,12 +51,16 @@ func main() {
 	}
 
 	/*
-	 * PreRequisite: Hystrix
+	 * PreRequisite: Prometheus
 	 * **************************** */
 	// Prometheus
 	collector := plugins.InitializePrometheusCollector(plugins.PrometheusCollectorConfig{
 		Namespace: conf.GetString("app.name"),
 	})
+
+	/*
+	 * PreRequisite: Hystrix
+	 * **************************** */
 	// Expose CB Prometheus metrics
 	metricCollector.Registry.Register(collector.NewPrometheusCollector)
 

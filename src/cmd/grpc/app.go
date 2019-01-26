@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/TheZeroSlave/zapsentry"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
 	"github.com/eldad87/go-boilerplate/src/app"
 	"github.com/eldad87/go-boilerplate/src/app/proto"
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
+	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -25,6 +27,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"net"
@@ -40,16 +43,9 @@ func main() {
 	if err != nil {
 		panic(err) // Nothing we can do
 	}
-
-	/*
-	 * PreRequisite: Logger
-	 * **************************** */
-	zapConfig := zap.NewProductionConfig()
-	zapConfig.Level.UnmarshalText([]byte(conf.GetString("log.level")))
-	zapConfig.Development = conf.GetString("environment") != "production"
-	logger, _ := zapConfig.Build()
-	defer logger.Sync()
-	// TODO: Zap + Sentry
+	if conf.GetString("environment") != "production" {
+		conf.Debug()
+	}
 
 	/*
 	 * PreRequisite: Prometheus
@@ -58,7 +54,6 @@ func main() {
 		Namespace: conf.GetString("app.name"),
 	})
 	http.Handle(conf.GetString("prometheus.route"), promhttp.Handler())
-	// TODO: Zap
 
 	/*
 	 * PreRequisite: Hystrix
@@ -75,6 +70,39 @@ func main() {
 	// Expose to HTTP
 	http.HandleFunc(conf.GetString("health_check.route.group")+conf.GetString("health_check.route.live"), healthChecker.LiveEndpoint)
 	http.HandleFunc(conf.GetString("health_check.route.group")+conf.GetString("health_check.route.ready"), healthChecker.ReadyEndpoint)
+
+	/*
+	 * PreRequisite: Logger
+	 * **************************** */
+	zapConfig := zap.NewProductionConfig()
+	zapConfig.Level.UnmarshalText([]byte(conf.GetString("log.level")))
+	zapConfig.Development = conf.GetString("environment") != "production"
+	// Expose log level Prometheus metrics
+	hook := promZap.MustNewPrometheusHook([]zapcore.Level{zapcore.DebugLevel, zapcore.InfoLevel, zapcore.WarnLevel,
+		zapcore.ErrorLevel, zapcore.FatalLevel, zapcore.PanicLevel, zapcore.DebugLevel})
+	logger, _ := zapConfig.Build(zap.Hooks(hook))
+	// Sentry
+	if conf.GetString("sentry.dsn") != "" {
+		atom := zap.NewAtomicLevel()
+		err := atom.UnmarshalText([]byte(conf.GetString("sentry.log_level")))
+		if err != nil {
+			logger.Fatal("Failed to parse Zap-Sentry log level", zap.String("sentry.log_level", conf.GetString("sentry.log_level")))
+		}
+
+		cfg := zapsentry.Configuration{
+			Level: atom.Level(), //when to send message to sentry
+			Tags: map[string]string{
+				"component": conf.GetString("app.name"),
+			},
+		}
+		core, err := zapsentry.NewCore(cfg, zapsentry.NewSentryClientFromDSN(conf.GetString("sentry.dsn")))
+		//in case of err it will return noop core. so we can safely attach it
+		if err != nil {
+			logger.Fatal("failed to init sentry / zap")
+		}
+		logger = zapsentry.AttachCoreToLogger(core, logger)
+	}
+	defer logger.Sync()
 
 	/*
 	 * PreRequisite: Jaeger
@@ -108,9 +136,6 @@ func main() {
 	)
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
-
-	// TODO: Mux:
-	// Max CONN, Rate, TimeOut
 
 	/*
 	 * PreRequisite: gRPC

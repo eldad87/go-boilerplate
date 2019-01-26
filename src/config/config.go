@@ -33,6 +33,7 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Defaults: Sentry
 	conf.SetDefault("sentry.dsn", "")
+	conf.SetDefault("sentry.log_level", "error") // gRPC CMD only
 
 	// Defaults: DataBase
 	conf.SetDefault("database.driver", "")
