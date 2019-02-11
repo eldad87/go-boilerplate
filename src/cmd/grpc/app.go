@@ -13,11 +13,10 @@ import (
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
 	"time"
 
-	migrateLogger "github.com/eldad87/go-boilerplate/src/pkg/golang-migrate/migrate"
-	databaseDriver "github.com/go-sql-driver/mysql" //Just change the import e.g github.com/lib/pq
-	"github.com/golang-migrate/migrate"
-	migrateMySql "github.com/golang-migrate/migrate/database/mysql"
-	_ "github.com/golang-migrate/migrate/source/file"
+	databaseDriver "github.com/go-sql-driver/mysql"
+	"github.com/gobuffalo/packr"
+	"github.com/rubenv/sql-migrate"
+
 	"github.com/luna-duclos/instrumentedsql"
 	instrumentedsqlOpenTracing "github.com/luna-duclos/instrumentedsql/opentracing"
 
@@ -157,27 +156,24 @@ func main() {
 	sql.Register("instrumented-mysql", instrumentedsql.WrapDriver(databaseDriver.MySQLDriver{}, instrumentedsql.WithTracer(instrumentedsqlOpenTracing.NewTracer(false))))
 	db, err := sql.Open("instrumented-mysql", conf.GetString("database.dsn"))
 	if err != nil {
-		logger.Sugar().Errorf("Database failed to listen: %v. Due to error: %v", conf.GetString("database.dsn"), err)
+		logger.Sugar().Fatal("Database failed to listen: %v. Due to error: %v", conf.GetString("database.dsn"), err)
 	}
 
 	if err := db.Ping(); err != nil {
-		//logger.Sugar().Errorf("Database failed to Ping: %v. Due to error: %v", conf.GetString("database.dsn"), err)
-		logger.Error("Database failed to Ping")
-		logger.Error(err.Error())
+		logger.Sugar().Errorf("Database failed to Ping: %v. Due to error: %v", conf.GetString("database.dsn"), err)
 	}
-
 	// Our app is not ready if we can't connect to our database (`var db *sql.DB`) in <1s.
 	healthChecker.AddReadinessCheck(conf.GetString("database.driver"), healthcheck.DatabasePingCheck(db, 1*time.Second))
 
-	// Migrate: https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md
-	driver, _ := migrateMySql.WithInstance(db, &migrateMySql.Config{})
-	m, _ := migrate.NewWithDatabaseInstance(
-		"file://src/internal/migration",
-		conf.GetString("database.driver"),
-		driver,
-	)
-	m.Log = migrateLogger.NewLogger(logger, logger.Core().Enabled(zap.DebugLevel))
-	m.Up()
+	// Migration
+	migrations := &migrate.PackrMigrationSource{
+		Box: packr.NewBox("../../../src/internal/migration"),
+	}
+	n, err := migrate.Exec(db, conf.GetString("database.driver"), migrations, migrate.Up)
+	if err != nil {
+		logger.Panic("Applied migrations:", zap.Error(err))
+	}
+	logger.Info("Applied migrations:", zap.Int("attempt", n))
 
 	/*
 	 * PreRequisite: gRPC

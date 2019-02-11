@@ -281,9 +281,6 @@
   digest = "1:33e3082496b3a8b28b21e394ddbc39d4a67f28e14babbeb8d3f3c361d0bcbc8f"
   name = "github.com/golang-migrate/migrate"
   packages = [
-    ".",
-    "database",
-    "database/mysql",
     "source",
     "source/file",
   ]
@@ -615,6 +612,17 @@
   pruneopts = ""
   revision = "a2d2540d382d6c5b27a0f914f176c3a1c3383907"
   version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:de54c071d521d5adb97ba259392faefffc3b702f08323601fc3a7ac873a717d7"
+  name = "github.com/rubenv/sql-migrate"
+  packages = [
+    ".",
+    "sqlparse",
+  ]
+  pruneopts = ""
+  revision = "5a8808c14925f69d2228981db113f672ad047e69"
 
 [[projects]]
   digest = "1:9d57e200ef5ccc4217fe0a34287308bac652435e7c6513f6263e0493d2245c56"
@@ -976,6 +984,14 @@
   version = "v8.18.2"
 
 [[projects]]
+  digest = "1:cf14a5ea75b0cdb3eed3315839a120110068dce6df03edbe8c3bf4bd642a6024"
+  name = "gopkg.in/gorp.v1"
+  packages = ["."]
+  pruneopts = ""
+  revision = "6a667da9c028871f98598d85413e3fc4c6daa52e"
+  version = "v1.7.2"
+
+[[projects]]
   branch = "v2"
   digest = "1:f54ba71a035aac92ced3e902d2bff3734a15d1891daff73ec0f90ef236750139"
   name = "gopkg.in/mgo.v2"
@@ -1017,8 +1033,6 @@
     "github.com/gin-gonic/gin",
     "github.com/go-sql-driver/mysql",
     "github.com/gobuffalo/packr",
-    "github.com/golang-migrate/migrate",
-    "github.com/golang-migrate/migrate/database/mysql",
     "github.com/golang-migrate/migrate/source/file",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
@@ -1044,6 +1058,7 @@
     "github.com/opentracing/opentracing-go/ext",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
+    "github.com/rubenv/sql-migrate",
     "github.com/sirupsen/logrus",
     "github.com/spf13/viper",
     "github.com/streadway/amqp",
