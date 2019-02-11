@@ -37,7 +37,7 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Defaults: DataBase
 	conf.SetDefault("database.driver", "")
-	conf.SetDefault("database.dsn", "")
+	conf.SetDefault("database.dsn", "") // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
 
 	// Defaults: Machinery
 	conf.SetDefault("machinery.broker_dsn", "")

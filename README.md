@@ -100,9 +100,10 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
 - [x] Jaeger/OT + Prometheus
 - [x] gRPC, HTTP Gateway and Swagger-UI
 - [x] gRPC and HTTP Gateway validation error sync
-- [ ] gRPC opentracing and instrumentation
-- [ ] Embed OpenAPI 
-- [ ] Split gRPC, gRPC HTTP Gateway, health checks and Gin into different ports it will allow the usage of different auth methods
+- [x] gRPC opentracing and instrumentation
+- [ ] Database migration - partly done, still need to ve
+- [ ] Embed OpenAPI using Packer
+- [ ] Run health checks and metrics on a different port then gRPC-gateway
 - [ ] Machinery: 
   - [x] Producer and Result interface/wrapper
   - [x] Producer: Hystrix (Conn, CB, TO)

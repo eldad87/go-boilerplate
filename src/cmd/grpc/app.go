@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/TheZeroSlave/zapsentry"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
@@ -10,6 +11,16 @@ import (
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
+	"time"
+
+	migrateLogger "github.com/eldad87/go-boilerplate/src/pkg/golang-migrate/migrate"
+	databaseDriver "github.com/go-sql-driver/mysql" //Just change the import e.g github.com/lib/pq
+	"github.com/golang-migrate/migrate"
+	migrateMySql "github.com/golang-migrate/migrate/database/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
+	"github.com/luna-duclos/instrumentedsql"
+	instrumentedsqlOpenTracing "github.com/luna-duclos/instrumentedsql/opentracing"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -81,6 +92,7 @@ func main() {
 	hook := promZap.MustNewPrometheusHook([]zapcore.Level{zapcore.DebugLevel, zapcore.InfoLevel, zapcore.WarnLevel,
 		zapcore.ErrorLevel, zapcore.FatalLevel, zapcore.PanicLevel, zapcore.DebugLevel})
 	logger, _ := zapConfig.Build(zap.Hooks(hook))
+
 	// Sentry
 	if conf.GetString("sentry.dsn") != "" {
 		atom := zap.NewAtomicLevel()
@@ -136,6 +148,36 @@ func main() {
 	)
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
+
+	/*
+	 * PreRequisite: DataBase
+	 * **************************** */
+	// Opentracing https://ceshihao.github.io/2018/11/29/tracing-db-operations/
+	// mysql.SetLogger(logger.Sugar())
+	sql.Register("instrumented-mysql", instrumentedsql.WrapDriver(databaseDriver.MySQLDriver{}, instrumentedsql.WithTracer(instrumentedsqlOpenTracing.NewTracer(false))))
+	db, err := sql.Open("instrumented-mysql", conf.GetString("database.dsn"))
+	if err != nil {
+		logger.Sugar().Errorf("Database failed to listen: %v. Due to error: %v", conf.GetString("database.dsn"), err)
+	}
+
+	if err := db.Ping(); err != nil {
+		//logger.Sugar().Errorf("Database failed to Ping: %v. Due to error: %v", conf.GetString("database.dsn"), err)
+		logger.Error("Database failed to Ping")
+		logger.Error(err.Error())
+	}
+
+	// Our app is not ready if we can't connect to our database (`var db *sql.DB`) in <1s.
+	healthChecker.AddReadinessCheck(conf.GetString("database.driver"), healthcheck.DatabasePingCheck(db, 1*time.Second))
+
+	// Migrate: https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md
+	driver, _ := migrateMySql.WithInstance(db, &migrateMySql.Config{})
+	m, _ := migrate.NewWithDatabaseInstance(
+		"file://src/internal/migration",
+		conf.GetString("database.driver"),
+		driver,
+	)
+	m.Log = migrateLogger.NewLogger(logger, logger.Core().Enabled(zap.DebugLevel))
+	m.Up()
 
 	/*
 	 * PreRequisite: gRPC

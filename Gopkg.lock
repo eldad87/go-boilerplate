@@ -101,25 +101,6 @@
   revision = "fa1af6a1f4f56e0e50d427fe901cd604d8c6fb8a"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a74730e052a45a3fab1d310fdef2ec17ae3d6af16228421e238320846f2aaec8"
-  name = "github.com/alecthomas/template"
-  packages = [
-    ".",
-    "parse",
-  ]
-  pruneopts = ""
-  revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
-
-[[projects]]
-  branch = "master"
-  digest = "1:8483994d21404c8a1d489f6be756e25bfccd3b45d65821f25695577791a08e68"
-  name = "github.com/alecthomas/units"
-  packages = ["."]
-  pruneopts = ""
-  revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
-
-[[projects]]
   digest = "1:1c036cced886ff485bd71bf8980c160655e9645a1d701c98fb6538c287da73b7"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -265,6 +246,52 @@
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:83e42cd058ee568f8897de6fb1ec66ba5751ab88436e8d9759824502a9fbed27"
+  name = "github.com/gobuffalo/envy"
+  packages = ["."]
+  pruneopts = ""
+  revision = "fa0dfdc10b5366ce365b7d9d1755a03e4e797bc5"
+  version = "v1.6.15"
+
+[[projects]]
+  branch = "master"
+  digest = "1:3637ea23c1d8720d62f8400f4b3b5750b11c35baa093a97856bc6295c77cf372"
+  name = "github.com/gobuffalo/packd"
+  packages = ["."]
+  pruneopts = ""
+  revision = "eca3b8fd66872a76119b189bbe0f58f776a2a39f"
+
+[[projects]]
+  digest = "1:2b54744775638914753fff21568f8839ff1bab4aa888cf851f03059c11042284"
+  name = "github.com/gobuffalo/packr"
+  packages = ["."]
+  pruneopts = ""
+  revision = "d93b0e17023e6fa58f86d547bdc551837df1daa8"
+  version = "v2.0.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:6098f692e043c3ee2612f47f214d169a3bdeb13ee37f946d10353b5e37aa702b"
+  name = "github.com/gobuffalo/syncx"
+  packages = ["."]
+  pruneopts = ""
+  revision = "558ac7de985fc4f4057bff27c7bdf99e92fe0750"
+
+[[projects]]
+  digest = "1:33e3082496b3a8b28b21e394ddbc39d4a67f28e14babbeb8d3f3c361d0bcbc8f"
+  name = "github.com/golang-migrate/migrate"
+  packages = [
+    ".",
+    "database",
+    "database/mysql",
+    "source",
+    "source/file",
+  ]
+  pruneopts = ""
+  revision = "4937cd088f7c7193ee59b319c1c2caa7482aae8e"
+  version = "v3.5.4"
+
+[[projects]]
   branch = "master"
   digest = "1:8343eff771a8e5a4723738f3d5fbefb3522df7e6bb2befc933a292b8daf5f932"
   name = "github.com/golang/protobuf"
@@ -399,30 +426,19 @@
   version = "v1.5.0"
 
 [[projects]]
-  digest = "1:7d4958827c8f2d9d31e24d9a3a52194eb179f77d854692e57954c516ecf76748"
-  name = "github.com/jinzhu/gorm"
-  packages = [
-    ".",
-    "dialects/mysql",
-  ]
-  pruneopts = ""
-  revision = "472c70caa40267cb89fd8facb07fe6454b578626"
-  version = "v1.9.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:d9a7385b84d8187fd94e0357045c6fa1147ca94caa56fdd539336c7c102fc728"
-  name = "github.com/jinzhu/inflection"
-  packages = ["."]
-  pruneopts = ""
-  revision = "04140366298a54a039076d798123ffa108fff46c"
-
-[[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   pruneopts = ""
   revision = "0b12d6b5"
+
+[[projects]]
+  digest = "1:7df5a9695a743c3e1626b28bb8741602c8c15527e1efaeaec48ab2ff9a23f74c"
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  pruneopts = ""
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:b79fc583e4dc7055ed86742e22164ac41bf8c0940722dbcb600f1a3ace1a8cb5"
@@ -447,6 +463,17 @@
   pruneopts = ""
   revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
   version = "v1.0.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c0d590c0820596dbf24d1c22a2dd41247b473cff4ebbbaca873cb34ad18709c7"
+  name = "github.com/luna-duclos/instrumentedsql"
+  packages = [
+    ".",
+    "opentracing",
+  ]
+  pruneopts = ""
+  revision = "b7d587d28109f7c4cfc3f7d8dd56b91899d4ba89"
 
 [[projects]]
   digest = "1:961dc3b1d11f969370533390fdf203813162980c858e1dabe827b60940c909a5"
@@ -559,7 +586,6 @@
   packages = [
     "expfmt",
     "internal/bitbucket.org/ww/goautoneg",
-    "log",
     "model",
   ]
   pruneopts = ""
@@ -577,6 +603,18 @@
   ]
   pruneopts = ""
   revision = "185b4288413d2a0dd0806f78c90dde719829e5ae"
+
+[[projects]]
+  digest = "1:a414693cbbb02c342d4388413069fe414ae1c72a1707add7af42bd4176a3679f"
+  name = "github.com/rogpeppe/go-internal"
+  packages = [
+    "modfile",
+    "module",
+    "semver",
+  ]
+  pruneopts = ""
+  revision = "a2d2540d382d6c5b27a0f914f176c3a1c3383907"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:9d57e200ef5ccc4217fe0a34287308bac652435e7c6513f6263e0493d2245c56"
@@ -636,17 +674,6 @@
   packages = ["."]
   pruneopts = ""
   revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
-
-[[projects]]
-  branch = "master"
-  digest = "1:1aee53aa607410650cb30046e2584850c278c854848e104547f2e2eaf35eed8a"
-  name = "github.com/tchap/zapext"
-  packages = [
-    "types",
-    "zapsentry",
-  ]
-  pruneopts = ""
-  revision = "e61c0c8823393722ae09ce0faee42fa177088a4b"
 
 [[projects]]
   digest = "1:941ab4973b3218a9a6d02d31734f5c762239eb538c0d702fff62d4037af8ab0a"
@@ -818,8 +845,6 @@
   packages = [
     "unix",
     "windows",
-    "windows/registry",
-    "windows/svc/eventlog",
   ]
   pruneopts = ""
   revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
@@ -943,14 +968,6 @@
   version = "v1.17.0"
 
 [[projects]]
-  digest = "1:15d017551627c8bb091bde628215b2861bed128855343fdd570c62d08871f6e1"
-  name = "gopkg.in/alecthomas/kingpin.v2"
-  packages = ["."]
-  pruneopts = ""
-  revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
-  version = "v2.2.6"
-
-[[projects]]
   digest = "1:dd549e360e5a8f982a28c2bcbe667307ceffe538ed9afc7c965524f1ac285b3f"
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
@@ -996,9 +1013,13 @@
     "github.com/afex/hystrix-go/hystrix/metric_collector",
     "github.com/eapache/go-resiliency/retrier",
     "github.com/evalphobia/logrus_sentry",
-    "github.com/getsentry/raven-go",
     "github.com/gin-contrib/gzip",
     "github.com/gin-gonic/gin",
+    "github.com/go-sql-driver/mysql",
+    "github.com/gobuffalo/packr",
+    "github.com/golang-migrate/migrate",
+    "github.com/golang-migrate/migrate/database/mysql",
+    "github.com/golang-migrate/migrate/source/file",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/timestamp",
@@ -1015,19 +1036,17 @@
     "github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins",
     "github.com/jaegertracing/jaeger-client-go/log/zap",
     "github.com/jaegertracing/jaeger-lib/metrics/prometheus",
-    "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/mysql",
+    "github.com/luna-duclos/instrumentedsql",
+    "github.com/luna-duclos/instrumentedsql/opentracing",
     "github.com/mitchellh/mapstructure",
     "github.com/opentracing-contrib/go-stdlib/nethttp",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
-    "github.com/prometheus/common/log",
     "github.com/sirupsen/logrus",
     "github.com/spf13/viper",
     "github.com/streadway/amqp",
-    "github.com/tchap/zapext/zapsentry",
     "github.com/uber/jaeger-client-go",
     "github.com/weaveworks/promrus",
     "github.com/zsais/go-gin-prometheus",
