@@ -29,9 +29,13 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
     rm -rf protoc3 && \
     rm protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip
 
-# RUN go get -u google.golang.org/grpc
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+
+# SQLBoiler
+RUN go get -u -t github.com/volatiletech/sqlboiler
+# Also install the driver of your choice, there exists pqsl, mysql, mssql
+RUN go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
 
 # Dep
 ADD Gopkg.toml Gopkg.toml

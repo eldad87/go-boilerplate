@@ -278,15 +278,12 @@
   revision = "558ac7de985fc4f4057bff27c7bdf99e92fe0750"
 
 [[projects]]
-  digest = "1:33e3082496b3a8b28b21e394ddbc39d4a67f28e14babbeb8d3f3c361d0bcbc8f"
-  name = "github.com/golang-migrate/migrate"
-  packages = [
-    "source",
-    "source/file",
-  ]
+  digest = "1:141cc9fc6279592458b304038bd16a05ef477d125c6dad281216345a11746fd7"
+  name = "github.com/gofrs/uuid"
+  packages = ["."]
   pruneopts = ""
-  revision = "4937cd088f7c7193ee59b319c1c2caa7482aae8e"
-  version = "v3.5.4"
+  revision = "6b08a5c5172ba18946672b49749cde22873dd7c2"
+  version = "v3.2.0"
 
 [[projects]]
   branch = "master"
@@ -407,6 +404,14 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  pruneopts = ""
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:941ab4973b3218a9a6d02d31734f5c762239eb538c0d702fff62d4037af8ab0a"
   name = "github.com/jaegertracing/jaeger-client-go"
   packages = ["log/zap"]
@@ -421,6 +426,25 @@
   pruneopts = ""
   revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
   version = "v1.5.0"
+
+[[projects]]
+  digest = "1:7d4958827c8f2d9d31e24d9a3a52194eb179f77d854692e57954c516ecf76748"
+  name = "github.com/jinzhu/gorm"
+  packages = [
+    ".",
+    "dialects/mysql",
+  ]
+  pruneopts = ""
+  revision = "472c70caa40267cb89fd8facb07fe6454b578626"
+  version = "v1.9.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:d9a7385b84d8187fd94e0357045c6fa1147ca94caa56fdd539336c7c102fc728"
+  name = "github.com/jinzhu/inflection"
+  packages = ["."]
+  pruneopts = ""
+  revision = "04140366298a54a039076d798123ffa108fff46c"
 
 [[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
@@ -444,6 +468,14 @@
   pruneopts = ""
   revision = "1624edc4454b8682399def8740d46db5e4362ba4"
   version = "v1.1.5"
+
+[[projects]]
+  digest = "1:2786f06eed161f2d37c797e9edfe40edeb836e9511dc1216cba6caac0f105079"
+  name = "github.com/kat-co/vala"
+  packages = ["."]
+  pruneopts = ""
+  revision = "bfe9b50e828ad56312e486cbf4165ff1ac3a9bae"
+  version = "v1"
 
 [[projects]]
   digest = "1:b60a24f942c7031ece6c48bcab0b683c7d3d6aa9fd17e21459d9ae604da258fa"
@@ -652,6 +684,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:a1403cc8a94b8d7956ee5e9694badef0e7b051af289caad1cf668331e3ffa4f6"
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
+  version = "v0.0.3"
+
+[[projects]]
   digest = "1:9ceffa4ab5f7195ecf18b3a7fff90c837a9ed5e22e66d18069e4bccfe1f52aa0"
   name = "github.com/spf13/jwalterweatherman"
   packages = ["."]
@@ -724,6 +764,46 @@
   pruneopts = ""
   revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
   version = "v1.1.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:bb57d77118b8ecb69550dfcb4c5980ea5e6ba91bed4d80f82180449a679322f3"
+  name = "github.com/volatiletech/inflect"
+  packages = ["."]
+  pruneopts = ""
+  revision = "e7201282ae8da26cd97aed2e516f75c0bd91bb93"
+
+[[projects]]
+  digest = "1:3610e24260db9be91620fb8f3958c2048cc8856b10037112b2d279cb0b550c1b"
+  name = "github.com/volatiletech/null"
+  packages = [
+    ".",
+    "convert",
+  ]
+  pruneopts = ""
+  revision = "0681ee3b5e046ac8bfbbd3999e79d3905e96972f"
+  version = "v8.0.0"
+
+[[projects]]
+  digest = "1:7bdc244c12fbdee05c975f0e352e343d562e5b7f62b2719c0d589b8870faffe0"
+  name = "github.com/volatiletech/sqlboiler"
+  packages = [
+    ".",
+    "boil",
+    "boilingcore",
+    "drivers",
+    "drivers/sqlboiler-mysql/driver",
+    "importers",
+    "queries",
+    "queries/qm",
+    "queries/qmhelper",
+    "randomize",
+    "strmangle",
+    "templatebin",
+  ]
+  pruneopts = ""
+  revision = "df8550538fefdf62f2520e74dbfad73f1bcb84a2"
+  version = "v3.2.0"
 
 [[projects]]
   digest = "1:d676526dd24c92bfe86269f9e6a70c4d340f6017d96915a01c23fef98db4db4f"
@@ -1033,7 +1113,6 @@
     "github.com/gin-gonic/gin",
     "github.com/go-sql-driver/mysql",
     "github.com/gobuffalo/packr",
-    "github.com/golang-migrate/migrate/source/file",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/timestamp",
@@ -1050,12 +1129,16 @@
     "github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins",
     "github.com/jaegertracing/jaeger-client-go/log/zap",
     "github.com/jaegertracing/jaeger-lib/metrics/prometheus",
+    "github.com/jinzhu/gorm",
+    "github.com/jinzhu/gorm/dialects/mysql",
+    "github.com/kat-co/vala",
     "github.com/luna-duclos/instrumentedsql",
     "github.com/luna-duclos/instrumentedsql/opentracing",
     "github.com/mitchellh/mapstructure",
     "github.com/opentracing-contrib/go-stdlib/nethttp",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
+    "github.com/pkg/errors",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/rubenv/sql-migrate",
@@ -1063,6 +1146,16 @@
     "github.com/spf13/viper",
     "github.com/streadway/amqp",
     "github.com/uber/jaeger-client-go",
+    "github.com/volatiletech/null",
+    "github.com/volatiletech/sqlboiler",
+    "github.com/volatiletech/sqlboiler/boil",
+    "github.com/volatiletech/sqlboiler/drivers",
+    "github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver",
+    "github.com/volatiletech/sqlboiler/queries",
+    "github.com/volatiletech/sqlboiler/queries/qm",
+    "github.com/volatiletech/sqlboiler/queries/qmhelper",
+    "github.com/volatiletech/sqlboiler/randomize",
+    "github.com/volatiletech/sqlboiler/strmangle",
     "github.com/weaveworks/promrus",
     "github.com/zsais/go-gin-prometheus",
     "go.uber.org/zap",

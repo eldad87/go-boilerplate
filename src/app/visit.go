@@ -1,24 +1,19 @@
 package app
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Visit struct {
 	ID        int       `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
 	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type VisitService interface {
-	Get(id *int) (*Visit, error)
-	Set(v *Visit) (*Visit, error)
-}
-
-type VisitServiceDemo struct {
-}
-
-func (vsd *VisitServiceDemo) Get(id *int) (*Visit, error) {
-	return &Visit{*id, time.Now()}, nil
-}
-
-func (vsd *VisitServiceDemo) Set(v *Visit) (*Visit, error) {
-	return v, nil
+	Get(c context.Context, id *int) (*Visit, error)
+	Set(c context.Context, v *Visit) (*Visit, error)
 }

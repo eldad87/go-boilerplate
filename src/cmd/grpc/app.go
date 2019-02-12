@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"github.com/TheZeroSlave/zapsentry"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
-	"github.com/eldad87/go-boilerplate/src/app"
+	service "github.com/eldad87/go-boilerplate/src/app/mysql"
 	"github.com/eldad87/go-boilerplate/src/app/proto"
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
 	"time"
 
+	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
 	databaseDriver "github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/packr"
 	"github.com/rubenv/sql-migrate"
@@ -151,8 +152,9 @@ func main() {
 	/*
 	 * PreRequisite: DataBase
 	 * **************************** */
+	// Logger
+	databaseDriver.SetLogger(sqlLogger.NewLogger(logger))
 	// Opentracing https://ceshihao.github.io/2018/11/29/tracing-db-operations/
-	// mysql.SetLogger(logger.Sugar())
 	sql.Register("instrumented-mysql", instrumentedsql.WrapDriver(databaseDriver.MySQLDriver{}, instrumentedsql.WithTracer(instrumentedsqlOpenTracing.NewTracer(false))))
 	db, err := sql.Open("instrumented-mysql", conf.GetString("database.dsn"))
 	if err != nil {
@@ -173,7 +175,7 @@ func main() {
 	if err != nil {
 		logger.Panic("Applied migrations:", zap.Error(err))
 	}
-	logger.Info("Applied migrations:", zap.Int("attempt", n))
+	logger.Debug("Applied migrations:", zap.Int("attempt", n))
 
 	/*
 	 * PreRequisite: gRPC
@@ -204,7 +206,8 @@ func main() {
 	defer grpcServer.GracefulStop()
 
 	// Visit Service
-	visitService := pb.VisitService{VisitService: &app.VisitServiceDemo{}}
+	mySQLVisitService := service.NewVisitService(db)
+	visitService := pb.VisitService{VisitService: mySQLVisitService}
 	pb.RegisterVisitServiceServer(grpcServer, &visitService)
 
 	// Start listening to gRPC requests

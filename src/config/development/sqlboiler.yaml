@@ -1,0 +1,9 @@
+mysql:
+  blacklist:
+    - "gorp_migrations"
+  dbname: "boilerplate"
+  host: db
+  port: 3306
+  user: "root"
+  pass: "root"
+  sslmode: "false"

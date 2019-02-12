@@ -46,7 +46,11 @@ protobuf:
 	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:. ./src/app/proto/visit_service.proto"
 	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. ./src/app/proto/visit_service.proto"
 	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --swagger_out=logtostderr=true:. ./src/app/proto/visit_service.proto"
-	docker-compose exec app chown 1000:1000 ./src/app/proto/*
+	docker-compose exec app /bin/bash -c "docker-compose exec app chown -R 1000:1000 ./src/app/proto"
+
+sqlboiler:
+	docker-compose exec app /bin/bash -c "sqlboiler --add-global-variants --add-panic-variants --wipe -d -c ./sqlboiler.yaml -o ./src/app/mysql/sqlboiler -p sqlboiler mysql"
+	docker-compose exec app /bin/bash -c "chown -R 1000:1000 ./src/app/mysql/sqlboiler"
 
 tests:
 	docker-compose run --entrypoint test.sh

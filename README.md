@@ -101,8 +101,8 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
 - [x] gRPC, HTTP Gateway and Swagger-UI
 - [x] gRPC and HTTP Gateway validation error sync
 - [x] gRPC opentracing and instrumentation
-- [ ] Database migration - partly done, Searching for alternative with native Golang migration
-- [ ] Embed OpenAPI using Packer
+- [ ] Database migration - partly done, Searching for alternative with native Golang migration and separate CMD / Dockerfile
+- [ ] Embed OpenAPI using packr
 - [ ] Run health checks and metrics on a different port then gRPC-gateway
 - [ ] Machinery: 
   - [x] Producer and Result interface/wrapper

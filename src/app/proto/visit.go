@@ -30,7 +30,7 @@ func (vs *VisitService) Get(c context.Context, id *ID) (*Visit, error) {
 		}
 	}
 
-	v, err := vs.VisitService.Get(&i)
+	v, err := vs.VisitService.Get(c, &i)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (vs *VisitService) Set(c context.Context, v *Visit) (*Visit, error) {
 		return nil, err
 	}
 
-	gVis, err := vs.VisitService.Set(aVis)
+	gVis, err := vs.VisitService.Set(c, aVis)
 	if err != nil {
 		return nil, err
 	}

@@ -23,10 +23,8 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
     mv protoc3/include/* /usr/local/include/ && \
     rm -rf $TEMP_DIR/protoc_inst
 
-# RUN go get -u google.golang.org/grpc
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-
 
 # Dep
 ADD Gopkg.toml Gopkg.toml
@@ -42,13 +40,20 @@ RUN go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-g
 # Copy our code
 Add src/ src/
 
+# Packr
+RUN go get -u github.com/gobuffalo/packr/packr
+RUN packr
+
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./src/cmd/grpc/app.go
+
+# Remove embeded .go files
+# RUN packr clean - irrelevant as we start from scratch
 
 # From scratch
 FROM scratch
 
-COPY --from=builder /go/src/app/github.com/eldad87/go-boilerplateprotoc3/bin/* /usr/local/bin/
+COPY --from=builder /go/src/app/github.com/eldad87/go-boilerplate/protoc3/bin/* /usr/local/bin/
 COPY --from=builder /go/src/app/github.com/eldad87/go-boilerplate/protoc3/include/* /usr/local/include/
 # COPY --from=builder /go/src/app/github.com/eldad87/go-boilerplate/config/${BUILD_ENV} ./config/src/${BUILD_ENV}
 

@@ -67,6 +67,7 @@ services:
       - ./src:/go/src/github.com/eldad87/go-boilerplate/src
       - ./Gopkg.lock:/go/src/github.com/eldad87/go-boilerplate/Gopkg.lock
       - ./Gopkg.toml:/go/src/github.com/eldad87/go-boilerplate/Gopkg.toml
+      - ./src/config/development/sqlboiler.yaml:/go/src/github.com/eldad87/go-boilerplate/sqlboiler.yaml
     ports:
       - "8080:8080"
       - "8082:8082"
