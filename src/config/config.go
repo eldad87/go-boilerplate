@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// explicit call to Set > flag > env > config > key/value store > default
 func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf := viper.New()
 	conf.SetDefault("environment", env)
@@ -37,7 +38,8 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Defaults: DataBase
 	conf.SetDefault("database.driver", "")
-	conf.SetDefault("database.dsn", "") // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
+	conf.SetDefault("database.dsn", "")             // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
+	conf.SetDefault("database.auto_migrate", "off") // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
 
 	// Defaults: Machinery
 	conf.SetDefault("machinery.broker_dsn", "")

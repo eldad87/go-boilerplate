@@ -404,14 +404,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
-  name = "github.com/inconshreveable/mousetrap"
-  packages = ["."]
-  pruneopts = ""
-  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
-  version = "v1.0"
-
-[[projects]]
   digest = "1:941ab4973b3218a9a6d02d31734f5c762239eb538c0d702fff62d4037af8ab0a"
   name = "github.com/jaegertracing/jaeger-client-go"
   packages = ["log/zap"]
@@ -511,6 +503,14 @@
   pruneopts = ""
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  digest = "1:7a23c38f99f5c4650bfbbdaeab210111c426f8ec17c04edcb74433487fb300c7"
+  name = "github.com/markbates/grift"
+  packages = ["grift"]
+  pruneopts = ""
+  revision = "ce869fe62d84875913170d186f91a34667e4c732"
+  version = "v1.0.5"
 
 [[projects]]
   digest = "1:3140e04675a6a91d2a20ea9d10bdadf6072085502e6def6768361260aee4b967"
@@ -684,14 +684,6 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:a1403cc8a94b8d7956ee5e9694badef0e7b051af289caad1cf668331e3ffa4f6"
-  name = "github.com/spf13/cobra"
-  packages = ["."]
-  pruneopts = ""
-  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
-  version = "v0.0.3"
-
-[[projects]]
   digest = "1:9ceffa4ab5f7195ecf18b3a7fff90c837a9ed5e22e66d18069e4bccfe1f52aa0"
   name = "github.com/spf13/jwalterweatherman"
   packages = ["."]
@@ -788,9 +780,7 @@
   digest = "1:7bdc244c12fbdee05c975f0e352e343d562e5b7f62b2719c0d589b8870faffe0"
   name = "github.com/volatiletech/sqlboiler"
   packages = [
-    ".",
     "boil",
-    "boilingcore",
     "drivers",
     "drivers/sqlboiler-mysql/driver",
     "importers",
@@ -799,7 +789,6 @@
     "queries/qmhelper",
     "randomize",
     "strmangle",
-    "templatebin",
   ]
   pruneopts = ""
   revision = "df8550538fefdf62f2520e74dbfad73f1bcb84a2"
@@ -1134,6 +1123,7 @@
     "github.com/kat-co/vala",
     "github.com/luna-duclos/instrumentedsql",
     "github.com/luna-duclos/instrumentedsql/opentracing",
+    "github.com/markbates/grift/grift",
     "github.com/mitchellh/mapstructure",
     "github.com/opentracing-contrib/go-stdlib/nethttp",
     "github.com/opentracing/opentracing-go",
@@ -1147,7 +1137,6 @@
     "github.com/streadway/amqp",
     "github.com/uber/jaeger-client-go",
     "github.com/volatiletech/null",
-    "github.com/volatiletech/sqlboiler",
     "github.com/volatiletech/sqlboiler/boil",
     "github.com/volatiletech/sqlboiler/drivers",
     "github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver",

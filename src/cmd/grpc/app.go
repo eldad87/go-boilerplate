@@ -168,14 +168,16 @@ func main() {
 	healthChecker.AddReadinessCheck(conf.GetString("database.driver"), healthcheck.DatabasePingCheck(db, 1*time.Second))
 
 	// Migration
-	migrations := &migrate.PackrMigrationSource{
-		Box: packr.NewBox("../../../src/internal/migration"),
+	if conf.GetString("database.auto_migrate") == "on" {
+		migrations := &migrate.PackrMigrationSource{
+			Box: packr.NewBox("../../../src/migration"),
+		}
+		n, err := migrate.Exec(db, conf.GetString("database.driver"), migrations, migrate.Up)
+		if err != nil {
+			logger.Error("Error applying migration:", zap.Error(err))
+		}
+		logger.Debug("Applied migrations:", zap.Int("attempt", n))
 	}
-	n, err := migrate.Exec(db, conf.GetString("database.driver"), migrations, migrate.Up)
-	if err != nil {
-		logger.Panic("Applied migrations:", zap.Error(err))
-	}
-	logger.Debug("Applied migrations:", zap.Int("attempt", n))
 
 	/*
 	 * PreRequisite: gRPC

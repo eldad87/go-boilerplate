@@ -4,15 +4,12 @@ FROM golang:1.11.1 as builder
 ARG build_env
 ARG app_port
 ARG app_grpc_port
-ARG app_grpc_port
 ARG protobuf_release_tag
-ARG proto_gen_release_tag
 
 ENV BUILD_ENV $build_env
 ENV APP_PORT $app_port
 ENV APP_GRPC_PORT $app_grpc_port
 ENV PROTOBUF_RELEASE_TAG $protobuf_release_tag
-ENV PROTO_GEN_RELEASE_TAG $proto_gen_release_tag
 
 # Path
 ENV GOBIN=$GOPATH/bin
@@ -37,6 +34,9 @@ RUN go get -u -t github.com/volatiletech/sqlboiler
 # Also install the driver of your choice, there exists pqsl, mysql, mssql
 RUN go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
 
+# Go based task runner
+RUN go get -u github.com/markbates/grift
+
 # Dep
 ADD Gopkg.toml Gopkg.toml
 ADD Gopkg.lock Gopkg.lock
@@ -55,6 +55,6 @@ Add src/ src/
 RUN go get -u github.com/VojtechVitek/rerun/cmd/rerun
 
 # Run binary or hot-reload
-CMD rerun -watch ./ -ignore vendor bin -run go run ./src/cmd/grpc/app.go
+CMD rerun -watch ./ -ignore vendor bin migration -run go run ./src/cmd/grpc/app.go
 
 EXPOSE ${APP_GRPC_PORT} ${APP_PORT}

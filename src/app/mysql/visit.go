@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/eldad87/go-boilerplate/src/app"
-	"github.com/eldad87/go-boilerplate/src/app/mysql/sqlboiler"
+	"github.com/eldad87/go-boilerplate/src/app/mysql/models"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 )
@@ -18,7 +18,7 @@ type VisitService struct {
 }
 
 func (vs *VisitService) Get(c context.Context, id *int) (*app.Visit, error) {
-	bVisit, err := sqlboiler.FindVisit(c, vs.db, *id)
+	bVisit, err := models.FindVisit(c, vs.db, *id)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (vs *VisitService) Get(c context.Context, id *int) (*app.Visit, error) {
 }
 
 func (vs *VisitService) Set(c context.Context, v *app.Visit) (*app.Visit, error) {
-	bVisit := sqlboiler.Visit{
+	bVisit := models.Visit{
 		ID:        v.ID,
 		FirstName: null.StringFrom(v.FirstName),
 		LastName:  null.StringFrom(v.LastName),
@@ -41,7 +41,7 @@ func (vs *VisitService) Set(c context.Context, v *app.Visit) (*app.Visit, error)
 	return sqlBoilerToVisit(&bVisit), nil
 }
 
-func sqlBoilerToVisit(bVisit *sqlboiler.Visit) *app.Visit {
+func sqlBoilerToVisit(bVisit *models.Visit) *app.Visit {
 	return &app.Visit{
 		ID:        bVisit.ID,
 		FirstName: bVisit.FirstName.String,
