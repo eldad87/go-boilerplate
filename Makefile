@@ -43,7 +43,7 @@ shell:
 	docker-compose exec app /bin/bash
 
 protobuf:
-	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:. --govalidators_out=. ./src/app/proto/visit_service.proto"
+	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:. --validate_out=lang=go:. ./src/app/proto/visit_service.proto"
 	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. ./src/app/proto/visit_service.proto"
 	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --swagger_out=logtostderr=true:. ./src/app/proto/visit_service.proto"
 	docker-compose exec app /bin/bash -c "chown -R 1000:1000 ./src/app/proto"

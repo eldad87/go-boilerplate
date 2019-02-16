@@ -3,7 +3,7 @@ package pb;
 
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
-import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
 service VisitService {
     // Simple return the visit id
@@ -17,11 +17,11 @@ service VisitService {
 }
 
 message ID {
-    int32 id = 1 [(validator.field) = {int_gt: 0}];
+    int32 id = 1 [(validate.rules).int32.gte = 2];
 };
 
 message Visit {
-    int32 id = 1;
-    string first_name = 2 [(validator.field) = {length_gt: 2}];
+    int32 id = 1 [(validate.rules).int32.gte = 2];
+    string first_name = 2 [(validate.rules).string.min_len = 2];
     google.protobuf.Timestamp created_at = 3;
 }

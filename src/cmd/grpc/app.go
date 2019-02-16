@@ -10,8 +10,8 @@ import (
 	"github.com/eldad87/go-boilerplate/src/app/proto"
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
+	"github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/validator"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
-	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/jmattheis/go-packr-swagger-ui"
 	"time"
 

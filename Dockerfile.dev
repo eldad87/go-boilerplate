@@ -28,7 +28,7 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
 
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-RUN go get -u github.com/mwitkow/go-proto-validators/protoc-gen-govalidators
+RUN go get -u github.com/lyft/protoc-gen-validate
 
 # SQLBoiler
 RUN go get -u -t github.com/volatiletech/sqlboiler
