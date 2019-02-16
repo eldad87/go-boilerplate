@@ -10,6 +10,7 @@ Dockeriezed, Production grade, easy to (re)use boilerplate for Go applications. 
 
 # Features
 - [gRPC](https://grpc.io/ "gRPC") - A high-performance, open-source universal RPC framework.
+- [gRPC request validator](https://github.com/mwitkow/go-proto-validators "gRPC request validator") - A protoc plugin that generates Validate() error functions on Go proto structs based on field options inside.
 - [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway/ "gRPC-Gateway") - gRPC to JSON proxy generator following the gRPC HTTP spec.
 - [OpenAPI](https://github.com/grpc-ecosystem/grpc-gateway/ "gRPC-Gateway") - Online Documentation for our gRPC-Gateway APIs.
 - [Machinery](https://github.com/RichardKnop/machinery "Machinery") -  An asynchronous task queue/job queue based on distributed message passing.
@@ -214,13 +215,12 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
   - [ ] Consumer: task registration pattern
   - [ ] Machinery Redis result backend limits/config (MaxActive, MaxIdle, MaxConnLifetime etc.)
   - [ ] Add configuration support for all backends (including healthchecks)
-- [ ] Logrus [Slack report](https://github.com/johntdyer/slackrus)
 - [x] Docker: shared /vendor folder for improved debugging expiriance.
 - [x] Healtcheck for Redis, AMQP and Goroutine Threshold
 - [ ] Protect monitoring HTTP entrypoints (http://localhost/metrics)
 - [ ] Unit-test coverage
 - [ ] Prometheus server
-- [ ] ELK
+- [ ] Log shipping
 - [ ] Dockerized SSL support
 - [ ] Hystrix turbine/dashboard 
 

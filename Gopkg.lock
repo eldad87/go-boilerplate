@@ -238,6 +238,25 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:709292c015123a3bc69ea970dc9abd6667170e7fbf5cdeb10c6d14b250d3385f"
+  name = "github.com/go-playground/locales"
+  packages = [
+    ".",
+    "currency",
+  ]
+  pruneopts = ""
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
+
+[[projects]]
+  digest = "1:7ca0f6f2a364f603e843763d35c979b595d71159982791de27f9ec40d532876b"
+  name = "github.com/go-playground/universal-translator"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b32fa301c9fe55953584134cb6853a13c87ec0a1"
+  version = "v0.16.0"
+
+[[projects]]
   digest = "1:e692d16fdfbddb94e9e4886aaf6c08bdbae5cb4ac80651445de9181b371c6e46"
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
@@ -492,6 +511,14 @@
   pruneopts = ""
   revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
   version = "v1.0.1"
+
+[[projects]]
+  digest = "1:69979393fd313159f0eccc6bc260164c8796ef3cbacb943f8ad0bf272b2a5dff"
+  name = "github.com/leodido/go-urn"
+  packages = ["."]
+  pruneopts = ""
+  revision = "70078a794e8ea4b497ba7c19a78cd60f90ccf0f4"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -1061,6 +1088,14 @@
   version = "v8.18.2"
 
 [[projects]]
+  digest = "1:dd95cd9b5ad7438c5149f39b3a4af4d6d0da845df9b51e73d41e89184f124290"
+  name = "gopkg.in/go-playground/validator.v9"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b199fa0642d29caca62b6a99d65cc981ba5edc3b"
+  version = "v9.27.0"
+
+[[projects]]
   digest = "1:cf14a5ea75b0cdb3eed3315839a120110068dce6df03edbe8c3bf4bd642a6024"
   name = "gopkg.in/gorp.v1"
   packages = ["."]
@@ -1166,6 +1201,7 @@
     "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
+    "gopkg.in/go-playground/validator.v9",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

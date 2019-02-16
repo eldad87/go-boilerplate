@@ -11,6 +11,7 @@ import (
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
+	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/jmattheis/go-packr-swagger-ui"
 	"time"
 
@@ -196,6 +197,7 @@ func main() {
 			grpc_prometheus.StreamServerInterceptor,
 			grpc_zap.StreamServerInterceptor(logger),
 			grpc_recovery.StreamServerInterceptor(),
+			grpc_validator.StreamServerInterceptor(),
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_ctxtags.UnaryServerInterceptor(),
@@ -203,6 +205,7 @@ func main() {
 			grpc_prometheus.UnaryServerInterceptor,
 			grpc_zap.UnaryServerInterceptor(logger),
 			grpc_recovery.UnaryServerInterceptor(),
+			grpc_validator.UnaryServerInterceptor(),
 		)),
 	)
 

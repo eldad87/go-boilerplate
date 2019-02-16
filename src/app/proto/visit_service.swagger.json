@@ -50,6 +50,9 @@
           "type": "integer",
           "format": "int32"
         },
+        "first_name": {
+          "type": "string"
+        },
         "created_at": {
           "type": "string",
           "format": "date-time"

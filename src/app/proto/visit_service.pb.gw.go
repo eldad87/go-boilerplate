@@ -65,14 +65,14 @@ func RegisterVisitServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.S
 	defer func() {
 		if err != nil {
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Printf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 			return
 		}
 		go func() {
 			<-ctx.Done()
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Printf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 		}()
 	}()
@@ -86,8 +86,8 @@ func RegisterVisitServiceHandler(ctx context.Context, mux *runtime.ServeMux, con
 	return RegisterVisitServiceHandlerClient(ctx, mux, NewVisitServiceClient(conn))
 }
 
-// RegisterVisitServiceHandlerClient registers the http handlers for service VisitService
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "VisitServiceClient".
+// RegisterVisitServiceHandler registers the http handlers for service VisitService to "mux".
+// The handlers forward requests to the grpc endpoint over the given implementation of "VisitServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "VisitServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "VisitServiceClient" to call the correct interceptors.
@@ -96,6 +96,15 @@ func RegisterVisitServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 	mux.Handle("GET", pattern_VisitService_Get_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
