@@ -36,6 +36,10 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("sentry.dsn", "")
 	conf.SetDefault("sentry.log_level", "error") // gRPC CMD only
 
+	// Swagger
+	conf.SetDefault("swagger.ui.route.group", "/swaggerui/")
+	conf.SetDefault("swagger.json.route.group", "/swagger")
+
 	// Defaults: DataBase
 	conf.SetDefault("database.driver", "")
 	conf.SetDefault("database.dsn", "")             // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:

@@ -439,6 +439,14 @@
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
 [[projects]]
+  digest = "1:b403b7c77c4b92578b059e9d162c2aff5496c90ec2a9d1c2834ffb81f5af2780"
+  name = "github.com/jmattheis/go-packr-swagger-ui"
+  packages = ["."]
+  pruneopts = ""
+  revision = "20cafb16034baecaab9a4a7729fde3d850aa6750"
+  version = "v3.20.5"
+
+[[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -1120,6 +1128,7 @@
     "github.com/jaegertracing/jaeger-lib/metrics/prometheus",
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/mysql",
+    "github.com/jmattheis/go-packr-swagger-ui",
     "github.com/kat-co/vala",
     "github.com/luna-duclos/instrumentedsql",
     "github.com/luna-duclos/instrumentedsql/opentracing",

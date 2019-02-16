@@ -11,6 +11,7 @@ import (
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
+	"github.com/jmattheis/go-packr-swagger-ui"
 	"time"
 
 	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
@@ -269,13 +270,16 @@ func main() {
 		logger.Sugar().Errorf("Failed to register Visit Service %+v", err)
 	}
 	http.HandleFunc(conf.GetString("app.grpc.http_route_prefix")+"/", muxHandlerFunc)
-	// Serve swagger.json
-	http.HandleFunc("/swaggerui/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		// a workaround in order to support swagger running on a different port/domain
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		http.ServeFile(w, r, "src/app/proto/visit_service.swagger.json")
-	})
+	// Swagger
+	if conf.GetString("environment") == "development" {
+		// Serve swagger.json
+		box := swaggerui.GetBox()
+		http.Handle(conf.GetString("swagger.ui.route.group"), http.StripPrefix(conf.GetString("swagger.ui.route.group"), http.FileServer(box)))
+		http.HandleFunc(conf.GetString("swagger.json.route.group"), func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "src/app/proto/visit_service.swagger.json")
+		})
+	}
 
 	/*
 	 * Start listening for incoming HTTP requests

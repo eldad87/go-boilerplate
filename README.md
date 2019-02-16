@@ -206,7 +206,7 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
 - [x] gRPC opentracing and instrumentation
 - [x] Task utility similar to Rake
 - [x] Auto migration run during development / Manual task
-- [ ] Embed OpenAPI using packr
+- [X] Embed OpenAPI using packr
 - [ ] Run health checks and metrics on a different port then gRPC-gateway
 - [ ] Machinery: 
   - [x] Producer and Result interface/wrapper
@@ -267,7 +267,7 @@ Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander 
   - http://localhost/health/ready - Kubernetes readiness
   - http://localhost/metrics - Prometheus instrumentation
   - http://localhost/ping - echo `{"message":"pong"}
-  - http:/http://localhost:8081/ - Swagger UI
+  - http://localhost:8080/swaggerui/ - Swagger UI
   - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
 Or, check the logs. Logs are writing STDOUT in a JSON format.
 http://localhost:16686/search
