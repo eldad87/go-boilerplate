@@ -40,10 +40,10 @@ func (m *ID) Validate() error {
 		return nil
 	}
 
-	if m.GetId() < 2 {
+	if m.GetId() < 0 {
 		return IDValidationError{
 			field:  "Id",
-			reason: "value must be greater than or equal to 2",
+			reason: "value must be greater than or equal to 0",
 		}
 	}
 
@@ -104,43 +104,41 @@ var _ interface {
 	ErrorName() string
 } = IDValidationError{}
 
-// Validate checks the field values on Visit with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
-func (m *Visit) Validate() error {
+// Validate checks the field values on VisitRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
+func (m *VisitRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	if m.GetId() < 2 {
-		return VisitValidationError{
+	if m.GetId() < 0 {
+		return VisitRequestValidationError{
 			field:  "Id",
-			reason: "value must be greater than or equal to 2",
+			reason: "value must be greater than or equal to 0",
 		}
 	}
 
 	if utf8.RuneCountInString(m.GetFirstName()) < 2 {
-		return VisitValidationError{
+		return VisitRequestValidationError{
 			field:  "FirstName",
 			reason: "value length must be at least 2 runes",
 		}
 	}
 
-	if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return VisitValidationError{
-				field:  "CreatedAt",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
+	if utf8.RuneCountInString(m.GetLastName()) < 2 {
+		return VisitRequestValidationError{
+			field:  "LastName",
+			reason: "value length must be at least 2 runes",
 		}
 	}
 
 	return nil
 }
 
-// VisitValidationError is the validation error returned by Visit.Validate if
-// the designated constraints aren't met.
-type VisitValidationError struct {
+// VisitRequestValidationError is the validation error returned by
+// VisitRequest.Validate if the designated constraints aren't met.
+type VisitRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -148,22 +146,22 @@ type VisitValidationError struct {
 }
 
 // Field function returns field value.
-func (e VisitValidationError) Field() string { return e.field }
+func (e VisitRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e VisitValidationError) Reason() string { return e.reason }
+func (e VisitRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e VisitValidationError) Cause() error { return e.cause }
+func (e VisitRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e VisitValidationError) Key() bool { return e.key }
+func (e VisitRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e VisitValidationError) ErrorName() string { return "VisitValidationError" }
+func (e VisitRequestValidationError) ErrorName() string { return "VisitRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e VisitValidationError) Error() string {
+func (e VisitRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -175,14 +173,14 @@ func (e VisitValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sVisit.%s: %s%s",
+		"invalid %sVisitRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = VisitValidationError{}
+var _ error = VisitRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -190,4 +188,95 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = VisitValidationError{}
+} = VisitRequestValidationError{}
+
+// Validate checks the field values on VisitResponse with the rules defined in
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
+func (m *VisitResponse) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Id
+
+	// no validation rules for FirstName
+
+	// no validation rules for LastName
+
+	if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return VisitResponseValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return VisitResponseValidationError{
+				field:  "UpdatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	return nil
+}
+
+// VisitResponseValidationError is the validation error returned by
+// VisitResponse.Validate if the designated constraints aren't met.
+type VisitResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e VisitResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e VisitResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e VisitResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e VisitResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e VisitResponseValidationError) ErrorName() string { return "VisitResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e VisitResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sVisitResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = VisitResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = VisitResponseValidationError{}

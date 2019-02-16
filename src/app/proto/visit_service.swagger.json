@@ -15,6 +15,58 @@
     "application/json"
   ],
   "paths": {
+    "/v1/visit": {
+      "post": {
+        "summary": "Update/Create a device",
+        "operationId": "Set",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbVisitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbVisitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "VisitService"
+        ]
+      },
+      "put": {
+        "summary": "Update/Create a device",
+        "operationId": "Set2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbVisitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbVisitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "VisitService"
+        ]
+      }
+    },
     "/v1/visit/{id}": {
       "get": {
         "summary": "Simple return the visit id",
@@ -23,7 +75,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pbVisit"
+              "$ref": "#/definitions/pbVisitResponse"
             }
           }
         },
@@ -33,7 +85,7 @@
             "in": "path",
             "required": true,
             "type": "integer",
-            "format": "int32"
+            "format": "int64"
           }
         ],
         "tags": [
@@ -43,17 +95,39 @@
     }
   },
   "definitions": {
-    "pbVisit": {
+    "pbVisitRequest": {
       "type": "object",
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int32"
+          "format": "int64"
         },
         "first_name": {
           "type": "string"
         },
+        "last_name": {
+          "type": "string"
+        }
+      }
+    },
+    "pbVisitResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
         "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
           "type": "string",
           "format": "date-time"
         }

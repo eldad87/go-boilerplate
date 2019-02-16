@@ -532,6 +532,14 @@
   revision = "b7d587d28109f7c4cfc3f7d8dd56b91899d4ba89"
 
 [[projects]]
+  digest = "1:660120f8911e583e208f38cb9832df8b879381e59c6b05f56f9974aaeb37d366"
+  name = "github.com/lyft/protoc-gen-validate"
+  packages = ["validate"]
+  pruneopts = ""
+  revision = "8e6aaf55f4954f1ef9d3ee2e8f5a50e79cc04f8f"
+  version = "v0.0.5"
+
+[[projects]]
   digest = "1:961dc3b1d11f969370533390fdf203813162980c858e1dabe827b60940c909a5"
   name = "github.com/magiconair/properties"
   packages = ["."]
@@ -1167,6 +1175,7 @@
     "github.com/kat-co/vala",
     "github.com/luna-duclos/instrumentedsql",
     "github.com/luna-duclos/instrumentedsql/opentracing",
+    "github.com/lyft/protoc-gen-validate/validate",
     "github.com/markbates/grift/grift",
     "github.com/mitchellh/mapstructure",
     "github.com/opentracing-contrib/go-stdlib/nethttp",

@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE visits (
-    id int NOT NULL AUTO_INCREMENT,
+    id int UNSIGNED AUTO_INCREMENT,
     first_name varchar(255),
     last_name varchar(255),
     created_at timestamp default NOW(),

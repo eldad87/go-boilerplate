@@ -2,24 +2,20 @@ package pb
 
 import (
 	"context"
+	"fmt"
 	"github.com/eldad87/go-boilerplate/src/app"
+	grpcErrors "github.com/eldad87/go-boilerplate/src/pkg/grpc/error"
 	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/grpc/codes"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type VisitService struct {
 	VisitService app.VisitService
 }
 
-func (vs *VisitService) Get(c context.Context, id *ID) (*Visit, error) {
-	i := int(id.GetId())
-
-	// Validation
-	/*if i != 1 {
-		br := grpcErrors.NewBadRequest()
-		br.AddViolation("Id", "Id must be 1")
-		return nil, br.GetStatusError(codes.InvalidArgument, "Invalid Argument")
-	}*/
-
+func (vs *VisitService) Get(c context.Context, id *ID) (*VisitResponse, error) {
+	i := uint(id.GetId())
 	v, err := vs.VisitService.Get(c, &i)
 	if err != nil {
 		return nil, err
@@ -29,10 +25,20 @@ func (vs *VisitService) Get(c context.Context, id *ID) (*Visit, error) {
 }
 
 // Update/Create a device
-func (vs *VisitService) Set(c context.Context, v *Visit) (*Visit, error) {
+func (vs *VisitService) Set(c context.Context, v *VisitRequest) (*VisitResponse, error) {
 	aVis, err := vs.protoToVisit(v)
 	if err != nil {
 		return nil, err
+	}
+
+	if errs := vs.VisitService.Validate(c, aVis); errs != nil {
+		br := grpcErrors.NewBadRequest()
+		for _, err := range errs.(validator.ValidationErrors) {
+			// TODO: use FieldViolation
+			br.AddViolation(err.StructField(), fmt.Sprintf("Key: '%s' Error:Field validation for '%s' failed on the '%s' tag", err.Namespace(), err.Field(), err.Tag()))
+		}
+
+		return nil, br.GetStatusError(codes.InvalidArgument, errs.Error())
 	}
 
 	gVis, err := vs.VisitService.Set(c, aVis)
@@ -43,23 +49,24 @@ func (vs *VisitService) Set(c context.Context, v *Visit) (*Visit, error) {
 	return vs.visitToProto(gVis)
 }
 
-func (vs *VisitService) visitToProto(visit *app.Visit) (*Visit, error) {
-	t, err := ptypes.TimestampProto(visit.CreatedAt)
+func (vs *VisitService) visitToProto(visit *app.Visit) (*VisitResponse, error) {
+	created, err := ptypes.TimestampProto(visit.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Visit{Id: int32(visit.ID), CreatedAt: t}, nil
+	updated, err := ptypes.TimestampProto(visit.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &VisitResponse{Id: uint32(visit.ID), FirstName: visit.FirstName, LastName: visit.LastName, CreatedAt: created, UpdatedAt: updated}, nil
 }
 
-func (vs *VisitService) protoToVisit(visit *Visit) (*app.Visit, error) {
-	t, err := ptypes.Timestamp(visit.CreatedAt)
-	if err != nil {
-		return nil, err
-	}
-
+func (vs *VisitService) protoToVisit(visit *VisitRequest) (*app.Visit, error) {
 	return &app.Visit{
-		ID:        int(visit.Id),
-		CreatedAt: t,
+		ID:        uint(visit.Id),
+		FirstName: visit.FirstName,
+		LastName:  visit.LastName,
 	}, nil
 }

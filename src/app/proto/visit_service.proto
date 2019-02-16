@@ -7,21 +7,38 @@ import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
 service VisitService {
     // Simple return the visit id
-    rpc Get(ID) returns (Visit) {
+    rpc Get(ID) returns (VisitResponse) {
         option (google.api.http) = {
           get: "/v1/visit/{id}"
         };
     }
     // Update/Create a device
-    rpc Set(Visit) returns (Visit) {}
+    rpc Set(VisitRequest) returns (VisitResponse) {
+        option (google.api.http) = {
+          post: "/v1/visit"
+          body: "*"
+          additional_bindings {
+            put: "/v1/visit"
+            body: "*"
+          }
+        };
+    }
 }
 
 message ID {
-    int32 id = 1 [(validate.rules).int32.gte = 2];
+    uint32 id = 1 [(validate.rules).uint32.gte = 0];
 };
 
-message Visit {
-    int32 id = 1 [(validate.rules).int32.gte = 2];
+message VisitRequest {
+    uint32 id = 1 [(validate.rules).uint32.gte = 0];
     string first_name = 2 [(validate.rules).string.min_len = 2];
-    google.protobuf.Timestamp created_at = 3;
-}
+    string last_name = 3 [(validate.rules).string.min_len = 2];
+};
+
+message VisitResponse {
+    uint32 id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
+};

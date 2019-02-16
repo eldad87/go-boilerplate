@@ -24,7 +24,7 @@ import (
 
 // Visit is an object representing the database table.
 type Visit struct {
-	ID        int         `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID        uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	FirstName null.String `boil:"first_name" json:"first_name,omitempty" toml:"first_name" yaml:"first_name,omitempty"`
 	LastName  null.String `boil:"last_name" json:"last_name,omitempty" toml:"last_name" yaml:"last_name,omitempty"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -50,14 +50,14 @@ var VisitColumns = struct {
 
 // Generated where
 
-type whereHelperint struct{ field string }
+type whereHelperuint struct{ field string }
 
-func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperuint) EQ(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperuint) NEQ(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperuint) LT(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperuint) LTE(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperuint) GT(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperuint) GTE(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 type whereHelpernull_String struct{ field string }
 
@@ -104,13 +104,13 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 }
 
 var VisitWhere = struct {
-	ID        whereHelperint
+	ID        whereHelperuint
 	FirstName whereHelpernull_String
 	LastName  whereHelpernull_String
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
-	ID:        whereHelperint{field: `id`},
+	ID:        whereHelperuint{field: `id`},
 	FirstName: whereHelpernull_String{field: `first_name`},
 	LastName:  whereHelpernull_String{field: `last_name`},
 	CreatedAt: whereHelpertime_Time{field: `created_at`},
@@ -522,12 +522,12 @@ func Visits(mods ...qm.QueryMod) visitQuery {
 }
 
 // FindVisitG retrieves a single record by ID.
-func FindVisitG(ctx context.Context, iD int, selectCols ...string) (*Visit, error) {
+func FindVisitG(ctx context.Context, iD uint, selectCols ...string) (*Visit, error) {
 	return FindVisit(ctx, boil.GetContextDB(), iD, selectCols...)
 }
 
 // FindVisitP retrieves a single record by ID with an executor, and panics on error.
-func FindVisitP(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) *Visit {
+func FindVisitP(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) *Visit {
 	retobj, err := FindVisit(ctx, exec, iD, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -537,7 +537,7 @@ func FindVisitP(ctx context.Context, exec boil.ContextExecutor, iD int, selectCo
 }
 
 // FindVisitGP retrieves a single record by ID, and panics on error.
-func FindVisitGP(ctx context.Context, iD int, selectCols ...string) *Visit {
+func FindVisitGP(ctx context.Context, iD uint, selectCols ...string) *Visit {
 	retobj, err := FindVisit(ctx, boil.GetContextDB(), iD, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -548,7 +548,7 @@ func FindVisitGP(ctx context.Context, iD int, selectCols ...string) *Visit {
 
 // FindVisit retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindVisit(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Visit, error) {
+func FindVisit(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*Visit, error) {
 	visitObj := &Visit{}
 
 	sel := "*"
@@ -680,7 +680,7 @@ func (o *Visit) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		return ErrSyncFail
 	}
 
-	o.ID = int(lastID)
+	o.ID = uint(lastID)
 	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == visitMapping["ID"] {
 		goto CacheNoHooks
 	}
@@ -1056,7 +1056,7 @@ func (o *Visit) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCol
 		return ErrSyncFail
 	}
 
-	o.ID = int(lastID)
+	o.ID = uint(lastID)
 	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == visitMapping["id"] {
 		goto CacheNoHooks
 	}
@@ -1355,12 +1355,12 @@ func (o *VisitSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 }
 
 // VisitExistsG checks if the Visit row exists.
-func VisitExistsG(ctx context.Context, iD int) (bool, error) {
+func VisitExistsG(ctx context.Context, iD uint) (bool, error) {
 	return VisitExists(ctx, boil.GetContextDB(), iD)
 }
 
 // VisitExistsP checks if the Visit row exists. Panics on error.
-func VisitExistsP(ctx context.Context, exec boil.ContextExecutor, iD int) bool {
+func VisitExistsP(ctx context.Context, exec boil.ContextExecutor, iD uint) bool {
 	e, err := VisitExists(ctx, exec, iD)
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -1370,7 +1370,7 @@ func VisitExistsP(ctx context.Context, exec boil.ContextExecutor, iD int) bool {
 }
 
 // VisitExistsGP checks if the Visit row exists. Panics on error.
-func VisitExistsGP(ctx context.Context, iD int) bool {
+func VisitExistsGP(ctx context.Context, iD uint) bool {
 	e, err := VisitExists(ctx, boil.GetContextDB(), iD)
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -1380,7 +1380,7 @@ func VisitExistsGP(ctx context.Context, iD int) bool {
 }
 
 // VisitExists checks if the Visit row exists.
-func VisitExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func VisitExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `visits` where `id`=? limit 1)"
 
