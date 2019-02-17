@@ -5,20 +5,18 @@ import (
 	"database/sql"
 	"github.com/eldad87/go-boilerplate/src/app"
 	"github.com/eldad87/go-boilerplate/src/app/mysql/models"
+	"github.com/eldad87/go-boilerplate/src/pkg/validator"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
-	"gopkg.in/go-playground/validator.v9"
 )
 
-// use a single instance of Validate, it caches struct info
-var validate *validator.Validate
-
-func NewVisitService(db *sql.DB) *VisitService {
-	return &VisitService{db}
+func NewVisitService(db *sql.DB, sv validator.StructValidator) *VisitService {
+	return &VisitService{db, sv}
 }
 
 type VisitService struct {
 	db *sql.DB
+	sv validator.StructValidator
 }
 
 func (vs *VisitService) Get(c context.Context, id *uint) (*app.Visit, error) {
@@ -37,11 +35,15 @@ func (vs *VisitService) Set(c context.Context, v *app.Visit) (*app.Visit, error)
 		LastName:  null.StringFrom(v.LastName),
 	}
 
-	var err error
+	err := vs.sv.StructCtx(c, v)
+	if err != nil {
+		return nil, err
+	}
+
 	if bVisit.ID == 0 {
 		err = bVisit.Insert(c, vs.db, boil.Infer())
 	} else {
-		err = bVisit.Upsert(c, vs.db, boil.Infer(), boil.Infer())
+		_, err = bVisit.Update(c, vs.db, boil.Infer())
 	}
 
 	if err != nil {
@@ -49,12 +51,6 @@ func (vs *VisitService) Set(c context.Context, v *app.Visit) (*app.Visit, error)
 	}
 
 	return sqlBoilerToVisit(&bVisit), nil
-}
-
-func (vs *VisitService) Validate(c context.Context, v *app.Visit) error {
-	validate = validator.New()
-	// TODO: Convert to FieldViolation
-	return validate.Struct(v)
 }
 
 func sqlBoilerToVisit(bVisit *models.Visit) *app.Visit {

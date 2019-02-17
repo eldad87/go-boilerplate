@@ -15,6 +15,9 @@ import (
 	"github.com/jmattheis/go-packr-swagger-ui"
 	"time"
 
+	"github.com/eldad87/go-boilerplate/src/pkg/validator/validator.v9"
+	v9validator "gopkg.in/go-playground/validator.v9"
+
 	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
 	databaseDriver "github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/packr"
@@ -211,8 +214,11 @@ func main() {
 
 	defer grpcServer.GracefulStop()
 
+	// Struct validator
+	sv := validator.NewStructVallidator(v9validator.New())
+
 	// Visit Service
-	mySQLVisitService := service.NewVisitService(db)
+	mySQLVisitService := service.NewVisitService(db, sv)
 	visitService := pb.VisitService{VisitService: mySQLVisitService}
 	pb.RegisterVisitServiceServer(grpcServer, &visitService)
 

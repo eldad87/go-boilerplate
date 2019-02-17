@@ -16,5 +16,4 @@ type Visit struct {
 type VisitService interface {
 	Get(c context.Context, id *uint) (*Visit, error)
 	Set(c context.Context, v *Visit) (*Visit, error)
-	Validate(c context.Context, v *Visit) error
 }

@@ -2,12 +2,11 @@ package pb
 
 import (
 	"context"
-	"fmt"
 	"github.com/eldad87/go-boilerplate/src/app"
 	grpcErrors "github.com/eldad87/go-boilerplate/src/pkg/grpc/error"
+	"github.com/eldad87/go-boilerplate/src/pkg/validator"
 	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc/codes"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 type VisitService struct {
@@ -31,19 +30,19 @@ func (vs *VisitService) Set(c context.Context, v *VisitRequest) (*VisitResponse,
 		return nil, err
 	}
 
-	if errs := vs.VisitService.Validate(c, aVis); errs != nil {
-		br := grpcErrors.NewBadRequest()
-		for _, err := range errs.(validator.ValidationErrors) {
-			// TODO: use FieldViolation
-			br.AddViolation(err.StructField(), fmt.Sprintf("Key: '%s' Error:Field validation for '%s' failed on the '%s' tag", err.Namespace(), err.Field(), err.Tag()))
-		}
-
-		return nil, br.GetStatusError(codes.InvalidArgument, errs.Error())
-	}
-
 	gVis, err := vs.VisitService.Set(c, aVis)
 	if err != nil {
-		return nil, err
+		// TODO: Improve the way we convert and return
+		br := grpcErrors.NewBadRequest()
+		if errs, ok := err.(*validator.StructViolation); ok {
+			for _, err := range errs.FieldViolation {
+				br.AddViolation(err.Field, err.Description)
+			}
+
+			return nil, br.GetStatusError(codes.InvalidArgument, err.Error())
+		}
+
+		return nil, br.GetStatusError(codes.Unknown, err.Error())
 	}
 
 	return vs.visitToProto(gVis)
