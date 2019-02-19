@@ -1,6 +1,6 @@
 // Based on: https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/validator/validator.go
 
-package grpc_validator
+package protoc_gen_validate
 
 import (
 	"golang.org/x/net/context"
@@ -24,14 +24,8 @@ type FieldError interface {
 // Invalid messages will be rejected with `InvalidArgument` before reaching any userspace handlers.
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if v, ok := req.(validator); ok {
-			if err := v.Validate(); err != nil {
-				br := grpcErrors.NewBadRequest()
-				if v, ok := err.(FieldError); ok {
-					br.AddViolation(v.Field(), v.Reason())
-				}
-				return nil, br.GetStatusError(codes.InvalidArgument, err.Error())
-			}
+		if res := ErrorHandler(req); res != nil {
+			return nil, res
 		}
 		return handler(ctx, req)
 	}
@@ -58,7 +52,14 @@ func (s *recvWrapper) RecvMsg(m interface{}) error {
 	if err := s.ServerStream.RecvMsg(m); err != nil {
 		return err
 	}
-	if v, ok := m.(validator); ok {
+	if res := ErrorHandler(m); res != nil {
+		return res
+	}
+	return nil
+}
+
+func ErrorHandler(msg interface{}) error {
+	if v, ok := msg.(validator); ok {
 		if err := v.Validate(); err != nil {
 			br := grpcErrors.NewBadRequest()
 			if v, ok := err.(FieldError); ok {
@@ -67,5 +68,6 @@ func (s *recvWrapper) RecvMsg(m interface{}) error {
 			return br.GetStatusError(codes.InvalidArgument, err.Error())
 		}
 	}
+
 	return nil
 }

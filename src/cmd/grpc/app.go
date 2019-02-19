@@ -10,12 +10,12 @@ import (
 	"github.com/eldad87/go-boilerplate/src/app/proto"
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
-	"github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/validator"
+	grpc_status_v9validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/status/validator.v9"
+	grpc_validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/validator/protoc_gen_validate"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
 	"github.com/jmattheis/go-packr-swagger-ui"
 	"time"
 
-	"github.com/eldad87/go-boilerplate/src/pkg/validator/validator.v9"
 	v9validator "gopkg.in/go-playground/validator.v9"
 
 	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
@@ -201,6 +201,7 @@ func main() {
 			grpc_zap.StreamServerInterceptor(logger),
 			grpc_recovery.StreamServerInterceptor(),
 			grpc_validator.StreamServerInterceptor(),
+			grpc_status_v9validator.StreamServerInterceptor(),
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_ctxtags.UnaryServerInterceptor(),
@@ -209,16 +210,14 @@ func main() {
 			grpc_zap.UnaryServerInterceptor(logger),
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_validator.UnaryServerInterceptor(),
+			grpc_status_v9validator.UnaryServerInterceptor(),
 		)),
 	)
 
 	defer grpcServer.GracefulStop()
 
-	// Struct validator
-	sv := validator.NewStructVallidator(v9validator.New())
-
 	// Visit Service
-	mySQLVisitService := service.NewVisitService(db, sv)
+	mySQLVisitService := service.NewVisitService(db, v9validator.New())
 	visitService := pb.VisitService{VisitService: mySQLVisitService}
 	pb.RegisterVisitServiceServer(grpcServer, &visitService)
 

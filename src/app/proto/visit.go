@@ -3,10 +3,7 @@ package pb
 import (
 	"context"
 	"github.com/eldad87/go-boilerplate/src/app"
-	grpcErrors "github.com/eldad87/go-boilerplate/src/pkg/grpc/error"
-	"github.com/eldad87/go-boilerplate/src/pkg/validator"
 	"github.com/golang/protobuf/ptypes"
-	"google.golang.org/grpc/codes"
 )
 
 type VisitService struct {
@@ -32,17 +29,7 @@ func (vs *VisitService) Set(c context.Context, v *VisitRequest) (*VisitResponse,
 
 	gVis, err := vs.VisitService.Set(c, aVis)
 	if err != nil {
-		// TODO: Improve the way we convert and return
-		br := grpcErrors.NewBadRequest()
-		if errs, ok := err.(*validator.StructViolation); ok {
-			for _, err := range errs.FieldViolation {
-				br.AddViolation(err.Field, err.Description)
-			}
-
-			return nil, br.GetStatusError(codes.InvalidArgument, err.Error())
-		}
-
-		return nil, br.GetStatusError(codes.Unknown, err.Error())
+		return nil, err
 	}
 
 	return vs.visitToProto(gVis)
