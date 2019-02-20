@@ -7,12 +7,13 @@ import (
 	"github.com/TheZeroSlave/zapsentry"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
 	service "github.com/eldad87/go-boilerplate/src/app/mysql"
-	"github.com/eldad87/go-boilerplate/src/app/proto"
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
 	grpc_status_v9validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/status/validator.v9"
 	grpc_validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/validator/protoc_gen_validate"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
+	grpcService "github.com/eldad87/go-boilerplate/src/transport/grpc"
+	pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
 	"github.com/jmattheis/go-packr-swagger-ui"
 	"time"
 
@@ -218,7 +219,7 @@ func main() {
 
 	// Visit Service
 	mySQLVisitService := service.NewVisitService(db, v9validator.New())
-	visitService := pb.VisitService{VisitService: mySQLVisitService}
+	visitService := grpcService.VisitService{VisitService: mySQLVisitService}
 	pb.RegisterVisitServiceServer(grpcServer, &visitService)
 
 	// Start listening to gRPC requests

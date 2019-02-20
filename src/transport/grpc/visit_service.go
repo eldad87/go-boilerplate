@@ -1,8 +1,9 @@
-package pb
+package grpc
 
 import (
 	"context"
 	"github.com/eldad87/go-boilerplate/src/app"
+	pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
 	"github.com/golang/protobuf/ptypes"
 )
 
@@ -10,7 +11,7 @@ type VisitService struct {
 	VisitService app.VisitService
 }
 
-func (vs *VisitService) Get(c context.Context, id *ID) (*VisitResponse, error) {
+func (vs *VisitService) Get(c context.Context, id *pb.ID) (*pb.VisitResponse, error) {
 	i := uint(id.GetId())
 	v, err := vs.VisitService.Get(c, &i)
 	if err != nil {
@@ -21,7 +22,7 @@ func (vs *VisitService) Get(c context.Context, id *ID) (*VisitResponse, error) {
 }
 
 // Update/Create a device
-func (vs *VisitService) Set(c context.Context, v *VisitRequest) (*VisitResponse, error) {
+func (vs *VisitService) Set(c context.Context, v *pb.VisitRequest) (*pb.VisitResponse, error) {
 	aVis, err := vs.protoToVisit(v)
 	if err != nil {
 		return nil, err
@@ -35,7 +36,7 @@ func (vs *VisitService) Set(c context.Context, v *VisitRequest) (*VisitResponse,
 	return vs.visitToProto(gVis)
 }
 
-func (vs *VisitService) visitToProto(visit *app.Visit) (*VisitResponse, error) {
+func (vs *VisitService) visitToProto(visit *app.Visit) (*pb.VisitResponse, error) {
 	created, err := ptypes.TimestampProto(visit.CreatedAt)
 	if err != nil {
 		return nil, err
@@ -46,10 +47,10 @@ func (vs *VisitService) visitToProto(visit *app.Visit) (*VisitResponse, error) {
 		return nil, err
 	}
 
-	return &VisitResponse{Id: uint32(visit.ID), FirstName: visit.FirstName, LastName: visit.LastName, CreatedAt: created, UpdatedAt: updated}, nil
+	return &pb.VisitResponse{Id: uint32(visit.ID), FirstName: visit.FirstName, LastName: visit.LastName, CreatedAt: created, UpdatedAt: updated}, nil
 }
 
-func (vs *VisitService) protoToVisit(visit *VisitRequest) (*app.Visit, error) {
+func (vs *VisitService) protoToVisit(visit *pb.VisitRequest) (*app.Visit, error) {
 	return &app.Visit{
 		ID:        uint(visit.Id),
 		FirstName: visit.FirstName,
