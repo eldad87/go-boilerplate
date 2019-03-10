@@ -20,19 +20,47 @@ Dockeriezed, Production grade, easy to (re)use boilerplate for Go applications. 
 - [Health Check](https://github.com/heptiolabs/healthcheck "Health Check") - Implementing Kubernetes liveness and readiness probe handlers
 - [SQL-Migrate](https://github.com/rubenv/sql-migrate "SQL-Migrate") - SQL schema migration tool for Go
 - [SQLBoiler](https://github.com/volatiletech/sqlboiler "SQLBoiler") - Generate a Go ORM tailored to your database schema.
+- [Viper](https://github.com/spf13/viper "Viper") - Go configuration with fangs.
 - And much more!
 
-# File Strucutre (src/) (TBD/WIP)
-- app/
-- cmd/
-- config/
-- grifts/
-- config/development/
-- internal/
-- migration/
-- pkg/
+# Boilerplate
+### File Strucutre (src/)
+- `app/` - Where we define our service(s) and common data structure(s) for better inter-service communication and decoupling. For example:
+  - `app/visit.go` - contain our `VisitService interface` and `Visit Struct`
+  - `app/mysql/visit.go` - Implements our `VisitService` using `MySQL` as our DB.  
+  In case and you want to use a different DB, Simply add a new folder (e.g. `mongodb`) and implement the `VisitService` accordingly.
+  - From now on, any service that will relay on the `VisitService` will be decoupled from it's implementation. 
+- `cmd/` - Our App can compile into different executables (multiple `main()` functions), each run a different variation of our App.
+  - For example a Worker app (`cmd/worker/app.go`) can be built using the same (bulletproof & heavily tested) source code as our main cmd (`cmd/grpc/app.go`).  
+  In addition, excluding a lot of unnecessary dependency will lead to a better memory consumption.
+- `config/` - Configuration management is implemented using [Viper](https://github.com/spf13/viper "Viper"), It loads configuration based on the following priority:
+  - Environment variables
+  - `config/ENV-NAME/ENgit puV-NAME.yaml` - Yaml configuration file, where `ENV-NAME` is `development` etc.  
+  In order to use a configuration file with a compiled App - Simply preserve the same file structure. Anyway, you better using Env variables (or defaults) instad
+  - Default values - hard coded into `config.go`
+- `grifts/` - CLI task, more information is listed below.
+- `migration/` - Migrations, more information is listed below.
+- `pkg/` - public packages that can be used on different projects. Each package is a stand-alone unit and can function out-side of your source code.
+- `transport/` - Where we define our we transport our data (HTTP handlers, gRPC etc) 
 
-# Examples (TBD/WIP) 
+#### Make file
+The `make` file is mainly used as a "shortcut" to highly used tools such as docker, auto genration etc.  
+
+# Document by Example (TBD/WIP) 
+In order to build a rock-solid application you usually use the same set of tools over and over again, either in a form of a different language or a framework. It's all the same:
+- Configuration management
+- DB Migrations
+- ORM
+- CLI tasks
+- Handlers/Controllers
+- Async Job processing
+- Health Check/Instrumentation
+- Logs
+- Documentation
+- and finally Tests
+
+The following examples will demonstrate how each functionality can be used.
+
 ### Migration / Seed
 - Add your migration to the `src/migration` folder (1549889122_init_schema.sql), Make sure to follow the [standards](https://github.com/rubenv/sql-migrate#writing-migrations "standards"): 
 ```sql
@@ -132,7 +160,286 @@ var _ = Namespace("db", func() {
 - Now you can run your task ```make grift db:migrate```
 - You're done!
 - For additional information, make sure to visit the official [repository](https://godoc.org/github.com/markbates/grift/grift  "repository"): 
-### Machinery
+
+### Service / Data layer
+This is probably the most important part in the boilerplate, the goal is to create a separation between the data layer and the way other component interacts with it.
+
+- To begin with, we need to define our basic data struct, pay attention to the tags as they'll become handy later on:
+```go
+package app
+
+type Visit struct {
+	ID        uint      `validate:"gte=0"`
+	FirstName string    `validate:"required,gte=3,lte=254"`
+	LastName  string    `validate:"required,gte=3,lte=254"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+```
+- Next, define our service `VisitService`:
+```go
+// ..
+
+type VisitService interface {
+	Get(c context.Context, id *uint) (*Visit, error)
+}
+```
+- Save both `Visit struct` and `VisitService interface` as `app/visit.go`
+- From now on, to avoid coupling, any Component that relay on the `VisitService` will use it as a dependency so it won't be worried on how its been implemented, for example:
+```go
+type MyController struct {
+	VisitService app.VisitService
+}
+```
+- Assuming you followed the examples above and that you generated your SQLBoiler code, the database is migrated etc you can start implementing your service.
+- Create a new folder under `app/.` that represent your data layer (e.g `app/mysql`)
+- Implement your service `app/mysql/visit.go`:  
+```go
+package mysql
+
+import (
+	"context"
+	"database/sql"
+	"github.com/eldad87/go-boilerplate/src/app"
+	"github.com/eldad87/go-boilerplate/src/app/mysql/models"
+	"github.com/eldad87/go-boilerplate/src/pkg/validator"
+	"github.com/volatiletech/null"
+	"github.com/volatiletech/sqlboiler/boil"
+)
+
+func NewVisitService(db *sql.DB, sv validator.StructValidator) *VisitService {
+    return &VisitService{db, sv}
+}
+
+type VisitService struct {
+    db *sql.DB
+    sv validator.StructValidator
+}
+
+func (vs *VisitService) Get(c context.Context, id *uint) (*app.Visit, error) {
+    bVisit, err := models.FindVisit(c, vs.db, *id)
+    if err != nil {
+        return nil, err
+    }
+    
+    return sqlBoilerToVisit(bVisit), nil
+}
+
+func (vs *VisitService) Set(c context.Context, v *app.Visit) (*app.Visit, error) {
+    bVisit := models.Visit{
+        ID:        v.ID,
+        FirstName: null.StringFrom(v.FirstName),
+        LastName:  null.StringFrom(v.LastName),
+    }
+    
+    // Validate our Struct using the "validate" tags
+    err := vs.sv.StructCtx(c, v)
+    if err != nil {
+        return nil, err
+    }
+    
+    if bVisit.ID == 0 {
+        err = bVisit.Insert(c, vs.db, boil.Infer())
+    } else {
+        _, err = bVisit.Update(c, vs.db, boil.Infer())
+    }
+    
+    if err != nil {
+        return nil, err
+    }
+    
+    return sqlBoilerToVisit(&bVisit), nil
+}
+
+func sqlBoilerToVisit(bVisit *models.Visit) *app.Visit {
+    return &app.Visit{
+        ID:        bVisit.ID,
+        FirstName: bVisit.FirstName.String,
+        LastName:  bVisit.LastName.String,
+        CreatedAt: bVisit.CreatedAt,
+        UpdatedAt: bVisit.UpdatedAt,
+    }
+}
+```
+
+
+### Handlers/Controllers - gRPC + gRPC-Gateway
+In this example, We will
+ - Define a simple gRPC handler
+ - Expose it as a RESTful API
+ - Set the request constrains (Validations)
+ - Document it using OpenAPI (Swagger)
+
+So lets start:
+- Define our `VisitTransport` using protobuf in `transport/grpc/proto/visit_transport.proto`, pay attention to the constrain on `ID`: 
+```proto
+// ...
+
+service VisitTransport {
+    // Simple return a Visit record by ID
+    rpc Get(ID) returns (VisitResponse) {
+        option (google.api.http) = {
+          get: "/v1/visit/{id}" // RESTful route
+        };
+    }
+    // Update/Create a device
+    rpc Set(VisitRequest) returns (VisitResponse) {
+        option (google.api.http) = {
+          post: "/v1/visit"
+          body: "*"
+          additional_bindings {
+            put: "/v1/visit"
+            body: "*"
+          }
+        };
+    }
+}
+
+// Define a request and constrains, ID must be > 0
+message ID {
+    uint32 id = 1 [(validate.rules).uint32.gte = 0];
+};
+
+message VisitResponse {
+    uint32 id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
+};
+
+message VisitResponse {
+    uint32 id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
+};
+```
+- Generate our gRPC handler, validators, RESTful API and documentation (Swagger):  
+  - `make protobuf`  
+  \* The auto-generated code is located under the same folder as our `visit_transport.proto` file.
+- Implement the auto-generated `VisitTransportServer interface` (can be found in in `transport/grpc/proto/visit_transport.pb.go`).
+  - Important! - Use your services to persist your data (`app/*.go`), Inject them as dependency when needed.
+  - Store your implementation in a different folder (e.g `transport/grpc/visit_transport.go`) for better separation.
+```go
+package grpc
+
+import (
+	"context"
+	"github.com/eldad87/go-boilerplate/src/app"
+	pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
+	"github.com/golang/protobuf/ptypes"
+)
+
+type VisitTransport struct {
+	VisitService app.VisitService
+}
+
+func (vs *VisitTransport) Get(c context.Context, id *pb.ID) (*pb.VisitResponse, error) {
+	i := uint(id.GetId())
+	v, err := vs.VisitService.Get(c, &i)
+	if err != nil {
+		return nil, err
+	}
+
+	return vs.visitToProto(v)
+}
+
+// Update/Create a device
+func (vs *VisitTransport) Set(c context.Context, v *pb.VisitRequest) (*pb.VisitResponse, error) {
+	aVis, err := vs.protoToVisit(v)
+	if err != nil {
+		return nil, err
+	}
+
+	gVis, err := vs.VisitService.Set(c, aVis)
+	if err != nil {
+		return nil, err
+	}
+
+	return vs.visitToProto(gVis)
+}
+
+func (vs *VisitTransport) visitToProto(visit *app.Visit) (*pb.VisitResponse, error) {
+	created, err := ptypes.TimestampProto(visit.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	updated, err := ptypes.TimestampProto(visit.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.VisitResponse{Id: uint32(visit.ID), FirstName: visit.FirstName, LastName: visit.LastName, CreatedAt: created, UpdatedAt: updated}, nil
+}
+
+func (vs *VisitTransport) protoToVisit(visit *pb.VisitRequest) (*app.Visit, error) {
+	return &app.Visit{
+		ID:        uint(visit.Id),
+		FirstName: visit.FirstName,
+		LastName:  visit.LastName,
+	}, nil
+}
+
+```
+- Register your gRPC handler
+```go
+import(
+    // ..
+    
+    "database/sql"
+    v9validator "gopkg.in/go-playground/validator.v9"
+    service "github.com/eldad87/go-boilerplate/src/app/mysql"
+    grpcService "github.com/eldad87/go-boilerplate/src/transport/grpc"
+    pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
+)
+
+func main() {
+    // ..
+	
+    grpcServer := grpc.NewServer(
+        // ..
+    )
+    defer grpcServer.GracefulStop()
+    
+    db, err := sql.Open("mysql", "DSN...")
+    if err != nil {
+    	log.Fatal("Cannot connect to DB")
+    }
+	
+    mySQLVisitService := service.NewVisitService(db, v9validator.New())
+    visitTrans := grpcService.VisitTransport{VisitService: mySQLVisitService}
+    pb.RegisterVisitServiceServer(grpcServer, &visitTrans)
+    
+    if err := grpcServer.Serve(lis); err != nil {
+        log.Fatal("Cannot start gRPC server")
+    }
+}
+```
+- Now you can query your service using cURL (e.g `localhost/visit/1`) or a gRPC client 
+- You're done!
+
+### Logger
+Logger is a simple tool, yet probably the most useful one. Developers tend to consider logs as a "Free" resource, but in reality it can become quite pricey. Especially when your log-shipper need to do some parsing and aggregations.   
+In this implementation I used [Zap](https://github.com/uber-go/zap "Zap") as it provide everything that an equivalent library does (e.g Logrush) and yet 10x faster.
+```go
+import(
+    "go.uber.org/zap"
+    "go.uber.org/zap/zapcore"
+)
+
+zapConfig := zap.NewProductionConfig()
+zapConfig.Level.UnmarshalText([]byte("debug"))
+zapConfig.Development = true
+// Log our time, set the time as a string field called "time"
+logger.Info("Hi there, the time is", zap.String("time", time.Now().Format(time.RFC850)))
+
+```
+
+### Async Job processing
+##### Machinery
 - Consumer
 ```go
 TODO: Register "repeat(str string) string { return str }" as "repeat"
@@ -271,8 +578,3 @@ Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander 
   - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
 Or, check the logs. Logs are writing STDOUT in a JSON format.
 http://localhost:16686/search
-
- ### Configuration
- TBD
-  - File structure / env
-  - Env > File > Default

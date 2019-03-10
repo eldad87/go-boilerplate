@@ -34,7 +34,7 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Defaults: Sentry
 	conf.SetDefault("sentry.dsn", "")
-	conf.SetDefault("sentry.log_level", "error") // gRPC CMD only
+	conf.SetDefault("sentry.log_level", "error")
 
 	// Swagger
 	conf.SetDefault("swagger.ui.route.group", "/swaggerui/")
@@ -42,8 +42,8 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 
 	// Defaults: DataBase
 	conf.SetDefault("database.driver", "")
-	conf.SetDefault("database.dsn", "")             // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
-	conf.SetDefault("database.auto_migrate", "off") // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
+	conf.SetDefault("database.dsn", "") // If you use the MySQL driver with existing database client, you must create the client with parameter multiStatements=true:
+	conf.SetDefault("database.auto_migrate", "off")
 
 	// Defaults: Machinery
 	conf.SetDefault("machinery.broker_dsn", "")
