@@ -219,8 +219,8 @@ func main() {
 
 	// Visit Service
 	mySQLVisitService := service.NewVisitService(db, v9validator.New())
-	visitService := grpcService.VisitService{VisitService: mySQLVisitService}
-	pb.RegisterVisitServiceServer(grpcServer, &visitService)
+	visitService := grpcService.VisitTransport{VisitService: mySQLVisitService}
+	pb.RegisterVisitTransportServer(grpcServer, &visitService)
 
 	// Start listening to gRPC requests
 	go func() {
@@ -274,7 +274,7 @@ func main() {
 	)
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err = pb.RegisterVisitServiceHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
+	err = pb.RegisterVisitTransportHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
 	if err != nil {
 		logger.Sugar().Errorf("Failed to register Visit Service %+v", err)
 	}

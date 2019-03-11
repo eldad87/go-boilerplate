@@ -47,7 +47,7 @@ shell:
 #############################
 
 protobuf:
-	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:. --validate_out=lang=go:. --grpc-gateway_out=logtostderr=true:. --swagger_out=logtostderr=true:. ./src/transport/grpc/proto/visit_service.proto"
+	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:. --validate_out=lang=go:. --grpc-gateway_out=logtostderr=true:. --swagger_out=logtostderr=true:. ./src/transport/grpc/proto/*.proto"
 	docker-compose exec app /bin/bash -c "chown -R 1000:1000 ./src/transport/grpc/proto"
 
 sqlboiler:

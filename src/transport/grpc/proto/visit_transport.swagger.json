@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "src/transport/grpc/proto/visit_service.proto",
+    "title": "src/transport/grpc/proto/visit_transport.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -38,7 +38,7 @@
           }
         ],
         "tags": [
-          "VisitService"
+          "VisitTransport"
         ]
       },
       "put": {
@@ -63,7 +63,7 @@
           }
         ],
         "tags": [
-          "VisitService"
+          "VisitTransport"
         ]
       }
     },
@@ -89,7 +89,7 @@
           }
         ],
         "tags": [
-          "VisitService"
+          "VisitTransport"
         ]
       }
     }

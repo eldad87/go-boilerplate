@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
-service VisitService {
+service VisitTransport {
     // Simple return the visit id
     rpc Get(ID) returns (VisitResponse) {
         option (google.api.http) = {

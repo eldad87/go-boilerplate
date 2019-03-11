@@ -1,14 +1,25 @@
 # Go-Boilerplate
-An easy to use, extensible boilerplate for Go applications.
+An easy to use, extensible boilerplate for Go applications. 
+![](gophercises_lifting.gif)
 
 # Motivation
 It is very important to write applications that follows the latest standards, Re-using libraries (DRY) and most important; keeping you focused on the actual logic.
 Which in turn, leads to a robust and resilient product.
 
 # Concept
-Dockeriezed, Production grade, easy to (re)use boilerplate for Go applications. Based on Ashley [McNamara + Brian Ketelsen. Go best practices](https://www.youtube.com/watch?v=MzTcsI6tn-0 "McNamara + Brian Ketelsen. Go best practices"), [Ben Johnson. Standard Package Layout](https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 "Ben Johnson. Standard Package Layout"),[ golang-standards]( https://github.com/golang-standards/project-layout " golang-standard") and much more.
+Dockeriezed, production grade, Solid structured foundation, extendable boilerplate for Go applications - Based on Ashley [McNamara + Brian Ketelsen. Go best practices](https://www.youtube.com/watch?v=MzTcsI6tn-0 "McNamara + Brian Ketelsen. Go best practices"), [Ben Johnson. Standard Package Layout](https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 "Ben Johnson. Standard Package Layout"),[ golang-standards]( https://github.com/golang-standards/project-layout " golang-standard") and much more.    
+  
+In a nutshell, The Data and Transport layers are decoupled and dependencies are managed in your CMD.
+- Data Layer - Define by services and data-structs.
+  - Data-struct - a representation of your data model and used as a common language between different objects.
+  - Service - an interface that can and will have multiple implementations, each one is based on different DB (MySQL, MongoDB etc). Each implementation communicate (args/return) using a Data-Struct.
+- Transport layer - Define different ways of communication (HTTP, gRPC etc), relay on our services and use the Service(s) interface as a dependency, in other words, we can switch to a new DB with no changes to this layer.
+- CMD - Your `main` function, Where you build and configure all dependencies, start the transport layer and instrumentations.
 
-# Features
+Keep on reading and review the code for a solid example.
+
+# Under the hood
+- [Re-Run](https://github.com/VojtechVitek/rerun "Re-Run") - Auto code reload while developing
 - [gRPC](https://grpc.io/ "gRPC") - A high-performance, open-source universal RPC framework.
 - [gRPC request validator](https://github.com/mwitkow/go-proto-validators "gRPC request validator") - A protoc plugin that generates Validate() error functions on Go proto structs based on field options inside.
 - [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway/ "gRPC-Gateway") - gRPC to JSON proxy generator following the gRPC HTTP spec.
@@ -23,28 +34,100 @@ Dockeriezed, Production grade, easy to (re)use boilerplate for Go applications. 
 - [Viper](https://github.com/spf13/viper "Viper") - Go configuration with fangs.
 - And much more!
 
-# Boilerplate
-### File Strucutre (src/)
-- `app/` - Where we define our service(s) and common data structure(s) for better inter-service communication and decoupling. For example:
-  - `app/visit.go` - contain our `VisitService interface` and `Visit Struct`
-  - `app/mysql/visit.go` - Implements our `VisitService` using `MySQL` as our DB.  
-  In case and you want to use a different DB, Simply add a new folder (e.g. `mongodb`) and implement the `VisitService` accordingly.
-  - From now on, any service that will relay on the `VisitService` will be decoupled from it's implementation. 
-- `cmd/` - Our App can compile into different executables (multiple `main()` functions), each run a different variation of our App.
-  - For example a Worker app (`cmd/worker/app.go`) can be built using the same (bulletproof & heavily tested) source code as our main cmd (`cmd/grpc/app.go`).  
-  In addition, excluding a lot of unnecessary dependency will lead to a better memory consumption.
-- `config/` - Configuration management is implemented using [Viper](https://github.com/spf13/viper "Viper"), It loads configuration based on the following priority:
-  - Environment variables
-  - `config/ENV-NAME/ENgit puV-NAME.yaml` - Yaml configuration file, where `ENV-NAME` is `development` etc.  
-  In order to use a configuration file with a compiled App - Simply preserve the same file structure. Anyway, you better using Env variables (or defaults) instad
-  - Default values - hard coded into `config.go`
-- `grifts/` - CLI task, more information is listed below.
-- `migration/` - Migrations, more information is listed below.
-- `pkg/` - public packages that can be used on different projects. Each package is a stand-alone unit and can function out-side of your source code.
-- `transport/` - Where we define our we transport our data (HTTP handlers, gRPC etc) 
+Table of contents
+=================
 
-#### Make file
-The `make` file is mainly used as a "shortcut" to highly used tools such as docker, auto genration etc.  
+<!--ts-->
+  * [Installation](#installation)
+      * [Docker](#docker)
+      * [Dependency Management](#dependencies)
+      * [Makefile](#makefile)
+  * [Boilerplate](#boilerplate)
+      * [File Structure](#file-structure)
+      * [DB Migration](#migration--seed)
+      * [ORM](#orm--sqlboiler-usage)
+      * [CLI Tasks](#add-cli-task)
+      * [Service / Data agnostic layer](#service---data-layer-agnostic)
+      * [Transport later](#transport-layer-handlerscontrollers---grpc--grpc-gateway)
+      * [Logger](#logger)
+      * [Async Job](#async-job-processing)
+<!--te-->
+
+# Installation
+### Docker
+Run your project
+```bash
+git clone https://github.com/eldad87/go-boilerplate.git
+cd co-boilerplate
+make init // First time only!
+make up
+```
+#### Dependencies
+In order to manage the project's dependencies, enter project's shell and continue as usual, for example:
+```bash
+make shell
+dep ensure -add "github.com/username/repo"
+exit
+```
+
+### Instrumentation
+#### Jaeger
+You can skip this step if you already have a running instance of [Jaeger](https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/):
+```bash
+sudo docker run -d -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5578 \
+ -p 16686:16686 -p 14268:14268 --name jaeger jaegertracing/all-in-one:latest
+```
+To explore the traces, navigate to http://localhost:16686
+Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander at http://localhost:8083/
+
+### Verification
+ To verify that your project is running correctly, simply browse the following:
+  - http://localhost/health/live - Kubernetes liveness
+  - http://localhost/health/ready - Kubernetes readiness
+  - http://localhost/metrics - Prometheus instrumentation
+  - http://localhost:8080/swaggerui/ - Swagger UI
+  - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
+Or, check the logs. Logs are writing STDOUT in a JSON format.
+http://localhost:16686/search
+
+#### Makefile
+The `make` file is mainly used as a "shortcut" to commonly used commands and tools such as docker, auto code generation etc.  
+For all available commands, please checkout the [Makefile](Makefile "Makefile").
+
+
+# Boilerplate
+### File Structure
+    ..
+    ├── data                           # Docker volume, used while developing locally
+    ├── src                            # 
+    │   ├── app                        # Service Layer; Where we define our service(s) and common data structure(s) for better inter-service communication and decoupling. For example:
+    │   │   ├── visit.go               # Define our `VisitService interface` and `Visit Struct`
+    │   │   └── mysql                  # Data Layer; an hit of how we're going to implements our `VisitService interface` (MySQL..)
+    │   │       └── models             # Auto generated ORM using SQLBoiler which persist/fetch data to/from MySQL.
+    │   │       └── visit.go           # Implements our `VisitService interface` using SQLBoiler auto generated ORM.
+    │   │                              # 
+    │   ├── cmd                        # Our App can compile into different executables (multiple `main()` functions), each run a different flavor of our App. For example:
+    │   │   └── grpc                   # an hint of what the command will be like e.g support gRPC, on the other hand we could have used `consumer` which implies on an Async worker that connect to a Message queue 
+    │   │       └── app.go             # Where our `main()` function is located, used to prepare and inject all dependencies; expose instrumentations etc
+    │   │                              #
+    │   ├── config                     # Configuration management using Viper. It checks for relevant environment variables, fallback to config files and finally to defailt values (hardcoded)
+    │   │   └── config.go              # Initialize Viper and define our defeults (hardcoded)
+    │   │   └── development            # Config folder for "development". Can be used with a compiled version as long as you'll preserve the same file structure and naming convention
+    │   │       └── development.yaml   # Config file
+    │   │                              #
+    │   ├── grifts                     # CLI task, more information is listed below.
+    │   │   └── migrate.go             # CLI DB Migration tool
+    │   │                              #
+    │   ├── migration                  # Where we store our DB migration files
+    │   │                              #
+    │   ├── transport                  # Transport Layer;
+    │       └── grpc                   # an hint of how we're going to interact with the outside world 
+    │           ├── proto              # Where we store our .proto file(s) and it's auto-generated gRPC Goalang code
+    │           └── visit_transport.go # Implements the auto-generated gRPC interface 
+    ├── vendors                        # 
+    ├── Dockerfile                     #
+    ├── Makefile                       #
+    └── ...
 
 # Document by Example (TBD/WIP) 
 In order to build a rock-solid application you usually use the same set of tools over and over again, either in a form of a different language or a framework. It's all the same:
@@ -161,10 +244,11 @@ var _ = Namespace("db", func() {
 - You're done!
 - For additional information, make sure to visit the official [repository](https://godoc.org/github.com/markbates/grift/grift  "repository"): 
 
-### Service / Data layer
+### Service - Data layer agnostic
 This is probably the most important part in the boilerplate, the goal is to create a separation between the data layer and the way other component interacts with it.
 
-- To begin with, we need to define our basic data struct, pay attention to the tags as they'll become handy later on:
+- To begin with, we need to define our basic data struct  
+   \* Use `validate` tags to set your constrains, which later on can be enforced using `go-playground/validator.v9` in our Service implementation.
 ```go
 package app
 
@@ -185,15 +269,15 @@ type VisitService interface {
 }
 ```
 - Save both `Visit struct` and `VisitService interface` as `app/visit.go`
-- From now on, to avoid coupling, any Component that relay on the `VisitService` will use it as a dependency so it won't be worried on how its been implemented, for example:
+- From now on, to avoid coupling, any Controller/Handler/etc that relay on the `VisitService` will use it's `interface` as a dependency so it won't be worried on how its been implemented, for example:
 ```go
 type MyController struct {
 	VisitService app.VisitService
 }
 ```
-- Assuming you followed the examples above and that you generated your SQLBoiler code, the database is migrated etc you can start implementing your service.
+- Assuming you followed the examples above and that you generated your SQLBoiler code, the database (MySQL) is migrated etc, which means that you can start implementing your service.
 - Create a new folder under `app/.` that represent your data layer (e.g `app/mysql`)
-- Implement your service `app/mysql/visit.go`:  
+- Implement the ` VisitService interface` in `app/mysql/visit.go`:  
 ```go
 package mysql
 
@@ -263,7 +347,7 @@ func sqlBoilerToVisit(bVisit *models.Visit) *app.Visit {
 ```
 
 
-### Handlers/Controllers - gRPC + gRPC-Gateway
+### Transport Layer, Handlers/Controllers - gRPC + gRPC-Gateway
 In this example, We will
  - Define a simple gRPC handler
  - Expose it as a RESTful API
@@ -530,51 +614,3 @@ TODO: Register "repeat(str string) string { return str }" as "repeat"
 - [ ] Log shipping
 - [ ] Dockerized SSL support
 - [ ] Hystrix turbine/dashboard 
-
-# Installing
-### Docker
-Run your project
-```bash
-git clone https://github.com/eldad87/go-boilerplate.git
-cd co-boilerplate
-make init // First time only!
-make up
-```
-##### Dependecnies
-In order to manage the project's dependencies, enter project's shell and continue as usual, for example:
-```bash
-make shell
-dep ensure -add "github.com/username/repo"
-exit
-```
-##### Commands
-For all available commands, please checkout the [Makefile](Makefile "Makefile").
-### Linux
-##### Project
-```bash
-git clone https://github.com/eldad87/go-boilerplate.git
-cd co-boilerplate
-make init // First time only!
-dep ensure --vendor-only
-go run src/cmd/app/app.go
- ```
-##### Instrumentation
-###### Jaeger
-You can skip this step if you already gave a running instance of [Jaeger](https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/):
-```bash
-sudo docker run -d -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5578 \
- -p 16686:16686 -p 14268:14268 --name jaeger jaegertracing/all-in-one:latest
-```
-To explore the traces, navigate to http://localhost:16686
-Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander at http://localhost:8083/
-
-### Verification
- To verify that your project is running correctly, simply browse the following:
-  - http://localhost/health/live - Kubernetes liveness
-  - http://localhost/health/ready - Kubernetes readiness
-  - http://localhost/metrics - Prometheus instrumentation
-  - http://localhost/ping - echo `{"message":"pong"}
-  - http://localhost:8080/swaggerui/ - Swagger UI
-  - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
-Or, check the logs. Logs are writing STDOUT in a JSON format.
-http://localhost:16686/search
