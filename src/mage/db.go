@@ -6,12 +6,10 @@ import (
 	"database/sql"
 	"github.com/eldad87/go-boilerplate/src/config"
 	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
-	sqlmwInterceptor "github.com/eldad87/go-boilerplate/src/pkg/ngrok/sqlmw"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
 	databaseDriver "github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/packr"
 	"github.com/magefile/mage/mg"
-	"github.com/ngrok/sqlmw"
 	"github.com/rubenv/sql-migrate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -46,10 +44,7 @@ func (DB) Migrate() error {
 	 * **************************** */
 	// Logger
 	databaseDriver.SetLogger(sqlLogger.NewLogger(logger))
-	// Tracer
-	mysqlInterceptor := sqlmwInterceptor.Interceptor{Tracer: tracer}
-	sql.Register("instrumented-mysql", sqlmw.Driver(databaseDriver.MySQLDriver{}, mysqlInterceptor))
-	db, err := sql.Open("instrumented-mysql", conf.GetString("database.dsn"))
+	db, err := sql.Open("mysql", conf.GetString("database.dsn"))
 	if err != nil {
 		logger.Sugar().Fatal("Database failed to listen: %v. Due to error: %v", conf.GetString("database.dsn"), err)
 	}
