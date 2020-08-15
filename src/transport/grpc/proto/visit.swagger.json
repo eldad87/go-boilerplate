@@ -1,13 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "src/transport/grpc/proto/visit_transport.proto",
+    "title": "src/transport/grpc/proto/visit.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -18,12 +14,18 @@
     "/v1/visit": {
       "post": {
         "summary": "Update/Create a device",
-        "operationId": "Set",
+        "operationId": "Visit_Set",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbVisitResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -38,17 +40,23 @@
           }
         ],
         "tags": [
-          "VisitTransport"
+          "Visit"
         ]
       },
       "put": {
         "summary": "Update/Create a device",
-        "operationId": "Set2",
+        "operationId": "Visit_Set2",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbVisitResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -63,25 +71,31 @@
           }
         ],
         "tags": [
-          "VisitTransport"
+          "Visit"
         ]
       }
     },
-    "/v1/visit/{id}": {
+    "/v1/visit/{ID}": {
       "get": {
         "summary": "Simple return the visit id",
-        "operationId": "Get",
+        "operationId": "Visit_Get",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbVisitResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "ID",
             "in": "path",
             "required": true,
             "type": "integer",
@@ -89,7 +103,7 @@
           }
         ],
         "tags": [
-          "VisitTransport"
+          "Visit"
         ]
       }
     }
@@ -98,14 +112,14 @@
     "pbVisitRequest": {
       "type": "object",
       "properties": {
-        "id": {
+        "ID": {
           "type": "integer",
           "format": "int64"
         },
-        "first_name": {
+        "FirstName": {
           "type": "string"
         },
-        "last_name": {
+        "LastName": {
           "type": "string"
         }
       }
@@ -113,23 +127,56 @@
     "pbVisitResponse": {
       "type": "object",
       "properties": {
-        "id": {
+        "ID": {
           "type": "integer",
           "format": "int64"
         },
-        "first_name": {
+        "FirstName": {
           "type": "string"
         },
-        "last_name": {
+        "LastName": {
           "type": "string"
         },
-        "created_at": {
+        "CreatedAt": {
           "type": "string",
           "format": "date-time"
         },
-        "updated_at": {
+        "UpdatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }

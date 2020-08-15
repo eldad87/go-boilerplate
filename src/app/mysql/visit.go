@@ -3,11 +3,12 @@ package mysql
 import (
 	"context"
 	"database/sql"
+
 	"github.com/eldad87/go-boilerplate/src/app"
 	"github.com/eldad87/go-boilerplate/src/app/mysql/models"
 	"github.com/eldad87/go-boilerplate/src/pkg/validator"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func NewVisitService(db *sql.DB, sv validator.StructValidator) *VisitService {
@@ -21,7 +22,11 @@ type VisitService struct {
 
 func (vs *VisitService) Get(c context.Context, id *uint) (*app.Visit, error) {
 	bVisit, err := models.FindVisit(c, vs.db, *id)
-	if err != nil {
+
+	// No record found
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
 		return nil, err
 	}
 

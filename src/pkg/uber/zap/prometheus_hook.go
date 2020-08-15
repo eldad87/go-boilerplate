@@ -4,6 +4,7 @@ package zap
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -13,7 +14,7 @@ type PrometheusHook struct {
 }
 
 func NewPrometheusHook(levels []zapcore.Level) (func(zapcore.Entry) error, error) {
-	counterVec := prometheus.NewCounterVec(prometheus.CounterOpts{
+	counterVec := promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "log_messages",
 		Help: "Total number of log messages.",
 	}, []string{"level"})

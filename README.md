@@ -1,4 +1,4 @@
-# Go-Boilerplate
+# loan
 An easy to use, extensible boilerplate for Go applications. 
 ![](gophercises_lifting.gif)
 
@@ -26,7 +26,7 @@ Keep on reading and review the code for a solid example.
 - [OpenAPI](https://github.com/grpc-ecosystem/grpc-gateway/ "gRPC-Gateway") - Online Documentation for our gRPC-Gateway APIs.
 - [Machinery](https://github.com/RichardKnop/machinery "Machinery") -  An asynchronous task queue/job queue based on distributed message passing.
 - [Zap](https://github.com/uber-go/zap "Zap") - Blazing fast, structured, leveled logging in Go
-- [Grift](https://github.com/markbates/grift "Grift") - Go based task runner
+- [Mage](https://magefile.org/ "mage") - Go based task runner
 - [Prometheus](https://github.com/prometheus/client_golang "Prometheus") -  Instrumentation
 - [Health Check](https://github.com/heptiolabs/healthcheck "Health Check") - Implementing Kubernetes liveness and readiness probe handlers
 - [SQL-Migrate](https://github.com/rubenv/sql-migrate "SQL-Migrate") - SQL schema migration tool for Go
@@ -82,9 +82,9 @@ Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander 
 
 ### Verification
  To verify that your project is running correctly, simply browse the following:
-  - http://localhost/health/live - Kubernetes liveness
-  - http://localhost/health/ready - Kubernetes readiness
-  - http://localhost/metrics - Prometheus instrumentation
+  - http://localhost:8080/health/live - Kubernetes liveness
+  - http://localhost:8080/health/ready - Kubernetes readiness
+  - http://localhost:8080/metrics - Prometheus instrumentation
   - http://localhost:8080/swaggerui/ - Swagger UI
   - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
 Or, check the logs. Logs are writing STDOUT in a JSON format.
@@ -115,8 +115,8 @@ For all available commands, please checkout the [Makefile](Makefile "Makefile").
     │   │   └── development            # Config folder for "development". Can be used with a compiled version as long as you'll preserve the same file structure and naming convention
     │   │       └── development.yaml   # Config file
     │   │                              #
-    │   ├── grifts                     # CLI task, more information is listed below.
-    │   │   └── migrate.go             # CLI DB Migration tool
+    │   ├── mage                       # CLI task, more information is listed below.
+    │   │   └── db.go                  # CLI DB Migration tool
     │   │                              #
     │   ├── migration                  # Where we store our DB migration files
     │   │                              #
@@ -161,7 +161,7 @@ CREATE TABLE visits (
 DROP TABLE IF EXISTS visits;
 
 ```
-- Run ```make grift db:migrate```
+- Run ```make mage db:migrate```
 - You're done!
 - For additional information, make sure to visit the official [repository](https://github.com/rubenv/sql-migrate "repository"): 
 
@@ -202,45 +202,47 @@ func main() {
 - For additional information, make sure to visit the official [repository](https://github.com/volatiletech/sqlboiler "repository"): 
 
 ### Add CLI task
-Grift is a very simple library that allows you to write simple "task" scripts in Go and run them by name without having to write big main type of wrappers. Grift is similar to, and inspired by, Rake.
-- Add your TASK to the `src/grifts` folder (migrate.go), Make sure to follow the [standards](https://godoc.org/github.com/markbates/grift/grift "standards"): 
+Mage is a make/rake-like build tool using Go. You write plain-old go functions, and Mage automatically uses them as Makefile-like runnable targets.
+- Add your TASK to the `src/mage` folder (db.go), Make sure to 
+follow the [standards](https://magefile.org/magefiles/ "standards"): 
 ```go
-package grifts
+//+build mage
+
+package main
 
 import (
 	"database/sql"
 	"fmt"
 	"github.com/gobuffalo/packr"
-	. "github.com/markbates/grift/grift"
 	"github.com/rubenv/sql-migrate"
+	"github.com/magefile/mage/mg"
 )
 
-var _ = Namespace("db", func() {
-    Desc("migrate", "Migrates the databases")
-    Set("migrate", func(c *Context) error {
-        db, err := sql.Open("mysql", "database.dsn")
-        if err != nil {
-            panic("Failed to open DB connection")
-        }
-        
-        if err := db.Ping(); err != nil {
-            panic("Failed to ping DB")
-        }
-        
-        migrations := &migrate.PackrMigrationSource{
-            Box: packr.NewBox("../../src/migration"),
-        }
-        appliedMigrations, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
-        if err != nil {
-            fmt.Print(err)
-        }
-        fmt.Printf("Applied %v migrations", appliedMigrations)
-        
-        return nil
-    })
-})
+type DB mg.Namespace
+
+func (DB) Migrate() error {
+    db, err := sql.Open("mysql", "database.dsn")
+    if err != nil {
+        panic("Failed to open DB connection")
+    }
+    
+    if err := db.Ping(); err != nil {
+        panic("Failed to ping DB")
+    }
+    
+    migrations := &migrate.PackrMigrationSource{
+        Box: packr.NewBox("../../src/migration"),
+    }
+    appliedMigrations, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
+    if err != nil {
+        fmt.Print(err)
+    }
+    fmt.Printf("Applied %v migrations", appliedMigrations)
+    
+    return nil
+}
 ```
-- Now you can run your task ```make grift db:migrate```
+- Now you can run your task ```make mage db:migrate```
 - You're done!
 - For additional information, make sure to visit the official [repository](https://godoc.org/github.com/markbates/grift/grift  "repository"): 
 
@@ -288,7 +290,7 @@ import (
 	"github.com/eldad87/go-boilerplate/src/app/mysql/models"
 	"github.com/eldad87/go-boilerplate/src/pkg/validator"
 	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func NewVisitService(db *sql.DB, sv validator.StructValidator) *VisitService {
@@ -403,7 +405,7 @@ message VisitResponse {
 - Generate our gRPC handler, validators, RESTful API and documentation (Swagger):  
   - `make protobuf`  
   \* The auto-generated code is located under the same folder as our `visit_transport.proto` file.
-- Implement the auto-generated `VisitTransportServer interface` (can be found in in `transport/grpc/proto/visit_transport.pb.go`).
+- Implement the auto-generated `VisitServiceServer interface` (can be found in in `transport/grpc/proto/visit_transport.pb.go`).
   - Important! - Use your services to persist your data (`app/*.go`), Inject them as dependency when needed.
   - Store your implementation in a different folder (e.g `transport/grpc/visit_transport.go`) for better separation.
 ```go
@@ -474,7 +476,7 @@ import(
     // ..
     
     "database/sql"
-    v9validator "gopkg.in/go-playground/validator.v9"
+    v9validator "github.com/go-playground/validator/v10"
     service "github.com/eldad87/go-boilerplate/src/app/mysql"
     grpcService "github.com/eldad87/go-boilerplate/src/transport/grpc"
     pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"

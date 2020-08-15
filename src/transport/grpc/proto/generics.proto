@@ -1,0 +1,8 @@
+syntax = "proto3";
+package pb;
+
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+
+message ID {
+    uint32 ID = 1 [(validate.rules).uint32.gte = 0];
+};
