@@ -1,4 +1,4 @@
-FROM golang:1.11.1 as builder
+FROM golang:1.14.2 as builder
 
 # Arguments to Env variables
 ARG build_env
@@ -26,28 +26,30 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
     rm -rf protoc3 && \
     rm protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip
 
+RUN go mod init
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-RUN go get -u github.com/lyft/protoc-gen-validate
+RUN go get -u github.com/srikrsna/protoc-gen-gotag
+RUN go get -u github.com/envoyproxy/protoc-gen-validate
+RUN go get -u github.com/golang/protobuf/protoc-gen-go
 
 # SQLBoiler
-RUN go get -u -t github.com/volatiletech/sqlboiler
+RUN go get -u github.com/volatiletech/sqlboiler/v4
 # Also install the driver of your choice, there exists pqsl, mysql, mssql
-RUN go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
+RUN go get -u github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql
 
 # Go based task runner
-RUN go get -u github.com/markbates/grift
+RUN git clone https://github.com/magefile/mage
+RUN cd mage && go run bootstrap.go
+RUN cd $GOPATH/src/github.com/eldad87/go-boilerplate && rm -rf mage
 
 # Dep
-ADD Gopkg.toml Gopkg.toml
-ADD Gopkg.lock Gopkg.lock
-
-Run go get -u github.com/golang/dep/cmd/dep
-Run dep ensure --vendor-only
+#ADD go.mod go.mod
+#ADD go.sum go.sum
+Run go mod download
 
 # Install the correct protoc-gen-go in the correct version
-RUN go install ./vendor/github.com/golang/protobuf/protoc-gen-go/
-RUN go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/
+# RUN go install ./vendor/github.com/golang/protobuf/protoc-gen-go/
 
 # Copy our code
 Add src/ src/
@@ -55,7 +57,7 @@ Add src/ src/
 # Build or install hot-reload
 RUN go get -u github.com/VojtechVitek/rerun/cmd/rerun
 
-# Run binary or hot-reload
-CMD rerun -watch ./ -ignore vendor bin migration -run go run ./src/cmd/grpc/app.go
+# Run download deps, sync vendor folder to host and binary hot-reload
+CMD go mod download && rerun -watch ./ -ignore vendor vendor_host bin migration -run go run ./src/cmd/grpc/app.go
 
 EXPOSE ${APP_GRPC_PORT} ${APP_PORT}

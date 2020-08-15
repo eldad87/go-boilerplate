@@ -1,4 +1,4 @@
-FROM golang:1.11.1 as builder
+FROM golang:1.14.2 as builder
 
 # Arguments to Env variables
 ARG build_env
@@ -26,23 +26,30 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
     rm -rf protoc3 && \
     rm protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip
 
+# Protobuf, gRPC and Gateway
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-RUN go get -u github.com/lyft/protoc-gen-validate
+RUN go get -u github.com/srikrsna/protoc-gen-gotag
+RUN go get -u github.com/envoyproxy/protoc-gen-validate
+RUN go get -u github.com/golang/protobuf/protoc-gen-go
+
+# SQLBoiler
+RUN go get -u -t github.com/volatiletech/sqlboiler/v4
+# Also install the driver of your choice, there exists pqsl, mysql, mssql
+RUN go get github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql
 
 # Go based task runner
-RUN go get -u github.com/markbates/grift
+RUN git clone https://github.com/magefile/mage
+RUN cd mage && go run bootstrap.go
+RUN cd $GOPATH/src/github.com/eldad87/go-boilerplate && rm -rf mage
 
 # Dep
-ADD Gopkg.toml Gopkg.toml
-ADD Gopkg.lock Gopkg.lock
-
-Run go get -u github.com/golang/dep/cmd/dep
-Run dep ensure --vendor-only
+ADD go.mod go.mod
+ADD go.sum go.sum
+Run go mod download
 
 # Install the correct protoc-gen-go in the correct version
-RUN go install ./vendor/github.com/golang/protobuf/protoc-gen-go/
-RUN go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/
+# RUN go install ./vendor/github.com/golang/protobuf/protoc-gen-go/
 
 # Copy our code
 Add src/ src/
@@ -54,7 +61,7 @@ RUN packr
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./src/cmd/grpc/app.go
 
-# Remove embeded .go files, used in case and tested locallydo
+# Remove embeded .go files, used in case and tested locally
 RUN packr clean
 
 # From scratch
@@ -63,7 +70,7 @@ FROM scratch
 COPY --from=builder /app /app
 COPY --from=builder /usr/local/bin/* /usr/local/bin/
 COPY --from=builder /usr/local/include/* /usr/local/include/
-COPY --from=builder /go/bin/grift /go/bin/grift
+COPY --from=builder /go/bin/mage /go/bin/mage
 # COPY --from=builder /go/src/app/github.com/eldad87/go-boilerplate/config/${BUILD_ENV} ./config/src/${BUILD_ENV}
 
 EXPOSE ${APP_GRPC_PORT} ${APP_PORT}

@@ -47,15 +47,23 @@ shell:
 #############################
 
 protobuf:
-	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=plugins=grpc:. --validate_out=lang=go:. --grpc-gateway_out=logtostderr=true:. --swagger_out=logtostderr=true:. ./src/transport/grpc/proto/*.proto"
+	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I./vendor -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I/go/src/github.com/envoyproxy/protoc-gen-validate --go_out=plugins=grpc:. --validate_out=lang=go:. --grpc-gateway_out=logtostderr=true:. --swagger_out=logtostderr=true:. ./src/transport/grpc/proto/*.proto"
+	docker-compose exec app /bin/bash -c "protoc -I/usr/local/include -I. -I./vendor -I/go/src -I/go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I/go/src/github.com/envoyproxy/protoc-gen-validate --gotag_out=logtostderr=true:. ./src/transport/grpc/proto/*.proto"
 	docker-compose exec app /bin/bash -c "chown -R 1000:1000 ./src/transport/grpc/proto"
 
 sqlboiler:
 	docker-compose exec app /bin/bash -c "sqlboiler --add-global-variants --add-panic-variants --wipe -d -c ./sqlboiler.yaml -o ./src/app/mysql/models -p models mysql"
 	docker-compose exec app /bin/bash -c "chown -R 1000:1000 ./src/app/mysql/models"
 
-grift:
-	docker-compose exec app /bin/bash -c "cd src/ && grift $(filter-out $@,$(MAKECMDGOALS))"
+mage:
+	docker-compose exec app /bin/bash -c "mage -d src/mage $(filter-out $@,$(MAKECMDGOALS))"
+
+vendors:
+	docker-compose exec app /bin/bash -c "go mod vendor"
+	docker-compose exec app /bin/bash -c "rm -rf vendor_host/*"
+	docker-compose exec app /bin/bash -c "mv vendor/* vendor_host/."
+	docker-compose exec app /bin/bash -c "rm -rf vendor"
+	docker-compose exec app /bin/bash -c "ln -s vendor_host vendor"
 
 tests:
 	docker-compose run --entrypoint test.sh

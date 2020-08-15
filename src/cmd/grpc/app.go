@@ -4,28 +4,33 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/TheZeroSlave/zapsentry"
 	"github.com/afex/hystrix-go/hystrix/metric_collector"
 	service "github.com/eldad87/go-boilerplate/src/app/mysql"
 	"github.com/eldad87/go-boilerplate/src/config"
 	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
-	grpc_status_v9validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/status/validator.v9"
+	grpc_status_v9validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/status/validator.v10"
 	grpc_validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/validator/protoc_gen_validate"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
-	grpcService "github.com/eldad87/go-boilerplate/src/transport/grpc"
-	pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
+	grpcTransport "github.com/eldad87/go-boilerplate/src/transport/grpc"
+	"github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
 	"github.com/jmattheis/go-packr-swagger-ui"
-	"time"
 
-	v9validator "gopkg.in/go-playground/validator.v9"
+	null_v4_validation "github.com/eldad87/go-boilerplate/src/pkg/validator/custom/guregu/null-v4"
+	v10validator "github.com/go-playground/validator/v10"
 
 	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
 	databaseDriver "github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/packr"
 	"github.com/rubenv/sql-migrate"
 
-	"github.com/luna-duclos/instrumentedsql"
-	instrumentedsqlOpenTracing "github.com/luna-duclos/instrumentedsql/opentracing"
+	sqlmwInterceptor "github.com/eldad87/go-boilerplate/src/pkg/ngrok/sqlmw"
+	"github.com/ngrok/sqlmw"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -47,9 +52,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"net"
-	"net/http"
-	"os"
 )
 
 func main() {
@@ -160,8 +162,9 @@ func main() {
 	 * **************************** */
 	// Logger
 	databaseDriver.SetLogger(sqlLogger.NewLogger(logger))
-	// Opentracing https://ceshihao.github.io/2018/11/29/tracing-db-operations/
-	sql.Register("instrumented-mysql", instrumentedsql.WrapDriver(databaseDriver.MySQLDriver{}, instrumentedsql.WithTracer(instrumentedsqlOpenTracing.NewTracer(false))))
+	// Tracer
+	mysqlInterceptor := sqlmwInterceptor.Interceptor{Tracer: tracer}
+	sql.Register("instrumented-mysql", sqlmw.Driver(databaseDriver.MySQLDriver{}, mysqlInterceptor))
 	db, err := sql.Open("instrumented-mysql", conf.GetString("database.dsn"))
 	if err != nil {
 		logger.Sugar().Fatal("Database failed to listen: %v. Due to error: %v", conf.GetString("database.dsn"), err)
@@ -214,13 +217,21 @@ func main() {
 			grpc_status_v9validator.UnaryServerInterceptor(),
 		)),
 	)
-
 	defer grpcServer.GracefulStop()
 
+	validator := v10validator.New()
+	// Register valuer for guregu/null.v4
+	null_v4_validation.RegisterSQLNullValuer(validator)
+
+	/*	err = null_v4_validation.RegisterIsUpdate(validator)
+		if err != nil {
+			logger.Error("Failed to register isUpdate validation")
+		}
+	*/
 	// Visit Service
-	mySQLVisitService := service.NewVisitService(db, v9validator.New())
-	visitService := grpcService.VisitTransport{VisitService: mySQLVisitService}
-	pb.RegisterVisitTransportServer(grpcServer, &visitService)
+	visitService := service.NewVisitService(db, validator)
+	grpcVisitServer := grpcTransport.VisitServer{VisitService: visitService}
+	pb.RegisterVisitServer(grpcServer, &grpcVisitServer)
 
 	// Start listening to gRPC requests
 	go func() {
@@ -274,7 +285,7 @@ func main() {
 	)
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err = pb.RegisterVisitTransportHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
+	err = pb.RegisterVisitHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
 	if err != nil {
 		logger.Sugar().Errorf("Failed to register Visit Service %+v", err)
 	}
@@ -285,9 +296,9 @@ func main() {
 		// Serve swagger.json
 		box := swaggerui.GetBox()
 		http.Handle(conf.GetString("swagger.ui.route.group"), http.StripPrefix(conf.GetString("swagger.ui.route.group"), http.FileServer(box)))
-		http.HandleFunc(conf.GetString("swagger.json.route.group"), func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "src/app/proto/visit_service.swagger.json")
-		})
+
+		fs := http.FileServer(http.Dir("src/transport/grpc/proto"))
+		http.Handle(conf.GetString("swagger.json.route.group")+"/", http.StripPrefix(conf.GetString("swagger.json.route.group"), fs))
 	}
 
 	/*

@@ -7,8 +7,8 @@ import (
 
 type Visit struct {
 	ID        uint      `json:"id" validate:"gte=0"`
-	FirstName string    `json:"first_name" validate:"required,gte=3,lte=254"`
-	LastName  string    `json:"last_name" validate:"required,gte=3,lte=254"`
+	FirstName string    `json:"first_name" validate:"required,gte=2,lte=254"`
+	LastName  string    `json:"last_name" validate:"required,gte=2,lte=254"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
