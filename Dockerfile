@@ -34,9 +34,9 @@ RUN go get -u github.com/envoyproxy/protoc-gen-validate
 RUN go get -u github.com/golang/protobuf/protoc-gen-go
 
 # SQLBoiler
-RUN go get -u -t github.com/volatiletech/sqlboiler/v4
+RUN go get -u -t github.com/volatiletech/sqlboiler/v4@v4.2.0
 # Also install the driver of your choice, there exists pqsl, mysql, mssql
-RUN go get github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql
+RUN go get github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@v4.2.0
 
 # Go based task runner
 RUN git clone https://github.com/magefile/mage
