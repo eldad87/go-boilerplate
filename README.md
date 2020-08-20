@@ -1,4 +1,4 @@
-# loan
+# Go-Boilerplate
 An easy to use, extensible boilerplate for Go applications. 
 ![](gophercises_lifting.gif)
 
@@ -9,13 +9,7 @@ Which in turn, leads to a robust and resilient product.
 # Concept
 Dockeriezed, production grade, Solid structured foundation, extendable boilerplate for Go applications - Based on Ashley [McNamara + Brian Ketelsen. Go best practices](https://www.youtube.com/watch?v=MzTcsI6tn-0 "McNamara + Brian Ketelsen. Go best practices"), [Ben Johnson. Standard Package Layout](https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 "Ben Johnson. Standard Package Layout"),[ golang-standards]( https://github.com/golang-standards/project-layout " golang-standard") and much more.    
   
-In a nutshell, The Data and Transport layers are decoupled and dependencies are managed in your CMD.
-- Data Layer - Define by services and data-structs.
-  - Data-struct - a representation of your data model and used as a common language between different objects.
-  - Service - an interface that can and will have multiple implementations, each one is based on different DB (MySQL, MongoDB etc). Each implementation communicate (args/return) using a Data-Struct.
-- Transport layer - Define different ways of communication (HTTP, gRPC etc), relay on our services and use the Service(s) interface as a dependency, in other words, we can switch to a new DB with no changes to this layer.
-- CMD - Your `main` function, Where you build and configure all dependencies, start the transport layer and instrumentations.
-
+In a nutshell, data and transport layers are decoupled and we can create different executables (Webserer, Async Worker etc) of our app.
 Keep on reading and review the code for a solid example.
 
 # Under the hood
@@ -59,36 +53,37 @@ Run your project
 ```bash
 git clone https://github.com/eldad87/go-boilerplate.git
 cd co-boilerplate
-make init // First time only!
-make up
+docker-compose up // Or `make up`
 ```
-#### Dependencies
-In order to manage the project's dependencies, enter project's shell and continue as usual, for example:
+Enter shell
 ```bash
 make shell
-dep ensure -add "github.com/username/repo"
-exit
+```
+
+#### Dependencies
+Download project's dependencies and sync with the host's /vendor folder:
+```bash
+make vendors
 ```
 
 ### Instrumentation
 #### Jaeger
-You can skip this step if you already have a running instance of [Jaeger](https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/):
-```bash
-sudo docker run -d -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5578 \
- -p 16686:16686 -p 14268:14268 --name jaeger jaegertracing/all-in-one:latest
-```
+Jaeger is installed by default.
 To explore the traces, navigate to http://localhost:16686
-Next, check Jaeger (OpenTracing) at http://localhost:16686/ and Redis-Commander at http://localhost:8083/
+Next, check Jaeger (OpenTracing) at http://localhost:16686/ and 
 
-### Verification
+#### Logs
+Logs are written to STDOUT in JSON format.
+
+### Endpoints & Services
  To verify that your project is running correctly, simply browse the following:
   - http://localhost:8080/health/live - Kubernetes liveness
   - http://localhost:8080/health/ready - Kubernetes readiness
   - http://localhost:8080/metrics - Prometheus instrumentation
   - http://localhost:8080/swaggerui/ - Swagger UI
+  - http://localhost:8083/ - Redis-Commander
+  - http://localhost:16686/ - Jaeger
   - http://localhost:8080/v1/visit/__INT__ - gRPC Gateway, replace __INT__ with any numeric value
-Or, check the logs. Logs are writing STDOUT in a JSON format.
-http://localhost:16686/search
 
 #### Makefile
 The `make` file is mainly used as a "shortcut" to commonly used commands and tools such as docker, auto code generation etc.  
@@ -98,15 +93,15 @@ For all available commands, please checkout the [Makefile](Makefile "Makefile").
 # Boilerplate
 ### File Structure
     ..
-    ├── data                           # Docker volume, used while developing locally
+    ├── data                           # Docker volume, used during development.
     ├── src                            # 
-    │   ├── app                        # Service Layer; Where we define our service(s) and common data structure(s) for better inter-service communication and decoupling. For example:
-    │   │   ├── visit.go               # Define our `VisitService interface` and `Visit Struct`
-    │   │   └── mysql                  # Data Layer; an hit of how we're going to implements our `VisitService interface` (MySQL..)
-    │   │       └── models             # Auto generated ORM using SQLBoiler which persist/fetch data to/from MySQL.
-    │   │       └── visit.go           # Implements our `VisitService interface` using SQLBoiler auto generated ORM.
+    │   ├── app                        # Data Layer
+    |   |   ├── visit.go               # Service defenition; `VisitService interface` and `Visit Struct`
+    │   │   └── mysql                  # 
+    │   │       └── models             # Auto generated ORM using SQLBoiler.
+    │   │       └── visit.go           # Data Layer - Implement `VisitService interface` using SQLBoiler auto generated ORM.
     │   │                              # 
-    │   ├── cmd                        # Our App can compile into different executables (multiple `main()` functions), each run a different flavor of our App. For example:
+    │   ├── cmd                        # Our App can compile into different executable vlavors (multiple `main()` functions), each run a different flavor of our App. For example:
     │   │   └── grpc                   # an hint of what the command will be like e.g support gRPC, on the other hand we could have used `consumer` which implies on an Async worker that connect to a Message queue 
     │   │       └── app.go             # Where our `main()` function is located, used to prepare and inject all dependencies; expose instrumentations etc
     │   │                              #
@@ -120,7 +115,7 @@ For all available commands, please checkout the [Makefile](Makefile "Makefile").
     │   │                              #
     │   ├── migration                  # Where we store our DB migration files
     │   │                              #
-    │   ├── transport                  # Transport Layer;
+    │   └── transport                  # Transport Layer;
     │       └── grpc                   # an hint of how we're going to interact with the outside world 
     │           ├── proto              # Where we store our .proto file(s) and it's auto-generated gRPC Goalang code
     │           └── visit_transport.go # Implements the auto-generated gRPC interface 
@@ -163,6 +158,7 @@ DROP TABLE IF EXISTS visits;
 ```
 - Run ```make mage db:migrate```
 - You're done!
+- By default, the app is configured (database.auto_migrate = 'on') to run the migration process when it starts.
 - For additional information, make sure to visit the official [repository](https://github.com/rubenv/sql-migrate "repository"): 
 
 ### ORM / SQLBoiler Usage
