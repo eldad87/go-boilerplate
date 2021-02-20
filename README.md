@@ -7,7 +7,7 @@ It is very important to write applications that follows the latest standards, Re
 Which in turn, leads to a robust and resilient product.
 
 # Concept
-Dockeriezed, production grade, Solid structured foundation, extendable boilerplate for Go applications - Based on Ashley [McNamara + Brian Ketelsen. Go best practices](https://www.youtube.com/watch?v=MzTcsI6tn-0 "McNamara + Brian Ketelsen. Go best practices"), [Ben Johnson. Standard Package Layout](https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 "Ben Johnson. Standard Package Layout"),[ golang-standards]( https://github.com/golang-standards/project-layout " golang-standard") and much more.    
+Dockeriezed, production grade, well structured, extendable boilerplate for Go applications - Based on Ashley [McNamara + Brian Ketelsen. Go best practices](https://www.youtube.com/watch?v=MzTcsI6tn-0 "McNamara + Brian Ketelsen. Go best practices"), [Ben Johnson. Standard Package Layout](https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1 "Ben Johnson. Standard Package Layout"),[ golang-standards]( https://github.com/golang-standards/project-layout " golang-standard") and much more.    
   
 In a nutshell, data and transport layers are decoupled and we can create different executables (Webserer, Async Worker etc) of our app.
 Keep on reading and review the code for a solid example.
@@ -38,9 +38,9 @@ Table of contents
       * [Makefile](#makefile)
   * [Boilerplate](#boilerplate)
       * [File Structure](#file-structure)
-      * [DB Migration](#migration--seed)
-      * [ORM](#orm--sqlboiler-usage)
-      * [CLI Tasks](#add-cli-task)
+      * [CLI Tasks](#cli-tasks)
+      * [DB Migration](#db-migration)
+      * [ORM](#orm--sqlboiler)
       * [Service / Data agnostic layer](#service---data-layer-agnostic)
       * [Transport later](#transport-layer-handlerscontrollers---grpc--grpc-gateway)
       * [Logger](#logger)
@@ -61,7 +61,8 @@ make shell
 ```
 
 #### Dependencies
-Download project's dependencies and sync with the host's /vendor folder:
+The project depndencies are donloaded by defult when using docker-compose. 
+To download the dependencies and mount them the `/vendor` folder:
 ```bash
 make vendors
 ```
@@ -132,75 +133,20 @@ In order to build a rock-solid application you usually use the same set of tools
 - CLI tasks
 - Handlers/Controllers
 - Async Job processing
-- Health Check/Instrumentation
+- Health Check
+- Metrics/Instrumentation
 - Logs
 - Documentation
 - and finally Tests
 
 The following examples will demonstrate how each functionality can be used.
 
-### Migration / Seed
-- Add your migration to the `src/migration` folder (1549889122_init_schema.sql), Make sure to follow the [standards](https://github.com/rubenv/sql-migrate#writing-migrations "standards"): 
-```sql
--- +migrate Up
-CREATE TABLE visits (
-    id int NOT NULL AUTO_INCREMENT,
-    first_name varchar(255),
-    last_name varchar(255),
-    created_at timestamp default NOW(),
-    updated_at timestamp default NOW(),
-    PRIMARY KEY (id)
-);
-
--- +migrate Down
-DROP TABLE IF EXISTS visits;
-
-```
-- Run ```make mage db:migrate```
-- You're done!
-- By default, the app is configured (database.auto_migrate = 'on') to run the migration process when it starts.
-- For additional information, make sure to visit the official [repository](https://github.com/rubenv/sql-migrate "repository"): 
-
-### ORM / SQLBoiler Usage
-SQLBoiler is a tool to generate a Go ORM tailored to your database schema. Which result in a fully featured, ActiveRecord like ORM without any [performance](https://github.com/volatiletech/sqlboiler#benchmarks "performance") hit.
-- Make sure `sqlboiler.yaml` is configured correctly and points to the relevant databse: `cat src/config/development/sqlboiler.yaml`
-- Run `make sqlboiler`
-- The auto generated ORM is now located in `src/app/mysql*or-any-other-engine*/models`
-- Example (Based on the migration above):
-```go
-import (
-    "fmt"
-    "context"
-    "database/sql"
-    "github.com/go-sql-driver/mysql"
-)
-
-func main() {
-    visitId = 1
-    
-    db, err := sql.Open("mysql", "database.dsn")
-    if err != nil {
-        panic("Failed to open DB connection")
-    }
-    
-    if err := db.Ping(); err != nil {
-        panic("Failed to ping DB")
-    }
-    
-    if visit, err := models.FindVisit(context.Background(), db, visitId); err != nil {
-        fmt.Print("")
-    } else {
-        fmt.Print(visit.FirstName, visit.LastName)
-    }
-}
-
-```
-- For additional information, make sure to visit the official [repository](https://github.com/volatiletech/sqlboiler "repository"): 
-
-### Add CLI task
-Mage is a make/rake-like build tool using Go. You write plain-old go functions, and Mage automatically uses them as Makefile-like runnable targets.
-- Add your TASK to the `src/mage` folder (db.go), Make sure to 
-follow the [standards](https://magefile.org/magefiles/ "standards"): 
+### CLI tasks
+Mage is a make/rake-like build tool using Go. You write plain-old Go functions, and Mage automatically uses them as Makefile-like runnable targets.
+- Write your TASK according to Mage [standards](https://magefile.org/magefiles/ "standards") and store it under `src/mage/` folder.
+- Run your task using ```make mage Namespace:Function``` 
+- For additional information, make sure to visit the official [repository](https://godoc.org/github.com/markbates/grift/grift  "repository"): 
+- For a example, a CLI task that loads SQL into your Database:
 ```go
 //+build mage
 
@@ -238,15 +184,71 @@ func (DB) Migrate() error {
     return nil
 }
 ```
-- Now you can run your task ```make mage db:migrate```
-- You're done!
-- For additional information, make sure to visit the official [repository](https://godoc.org/github.com/markbates/grift/grift  "repository"): 
+- Now you can run the task ```make mage db:migrate```
+
+### DB Migration
+- Add your migration to the `src/migration` folder, Make sure to follow the [standards](https://github.com/rubenv/sql-migrate#writing-migrations "standards"). For example `1549889122_init_schema.sql`: 
+```sql
+-- +migrate Up
+CREATE TABLE visits (
+    id int NOT NULL AUTO_INCREMENT,
+    first_name varchar(255),
+    last_name varchar(255),
+    created_at timestamp default NOW(),
+    updated_at timestamp default NOW(),
+    PRIMARY KEY (id)
+);
+
+-- +migrate Down
+DROP TABLE IF EXISTS visits;
+
+```
+- Run the CLI task from the step before```make mage db:migrate```
+- By default, the app is configured to run the migration process when it starts, you can change the default behavior (database.auto_migrate = 'on').
+- For additional information, make sure to visit the official [repository](https://github.com/rubenv/sql-migrate "repository"): 
+
+### ORM / SQLBoiler
+SQLBoiler is a tool to generate a Go ORM tailored to your database schema. Which result in a fully featured, ActiveRecord like ORM without any [performance](https://github.com/volatiletech/sqlboiler#benchmarks "performance") hit.
+- If you're using a different setup than the provided `docker-compose.yaml`, make sure to adjust `src/config/development/sqlboiler.yaml` accordingly.
+- Run `make sqlboiler`
+- The auto generated ORM models are been stored under `src/app/mysql*or-any-other-engine*/models`
+- Usage example, based on the `visits` table from the previous step:
+```go
+import (
+    "fmt"
+    "context"
+    "database/sql"
+    "github.com/go-sql-driver/mysql"
+    "github.com/eldad87/go-boilerplate/src/app/mysql"
+)
+
+func main() {
+    visitId = 1
+    
+    db, err := sql.Open("mysql", "database.dsn")
+    if err != nil {
+        panic("Failed to open DB connection")
+    }
+    
+    if err := db.Ping(); err != nil {
+        panic("Failed to ping DB")
+    }
+    
+    if visit, err := models.FindVisit(context.Background(), db, visitId); err != nil {
+        fmt.Print("")
+    } else {
+        fmt.Print(visit.FirstName, visit.LastName)
+    }
+}
+
+```
+- For additional information, make sure to visit the official [repository](https://github.com/volatiletech/sqlboiler "repository"): 
 
 ### Service - Data layer agnostic
 This is probably the most important part in the boilerplate, the goal is to create a separation between the data layer and the way other component interacts with it.
 
 - To begin with, we need to define our basic data struct  
-   \* Use `validate` tags to set your constrains, which later on can be enforced using `go-playground/validator.v9` in our Service implementation.
+   \* Use `validate` tags to set your constrains, which later on can be enforced using `go-playground/validator.v10` in our Service implementation.
 ```go
 package app
 
@@ -273,7 +275,7 @@ type MyController struct {
 	VisitService app.VisitService
 }
 ```
-- Assuming you followed the examples above and that you generated your SQLBoiler code, the database (MySQL) is migrated etc, which means that you can start implementing your service.
+- Assuming you followed the examples above, you can start implementing your service.
 - Create a new folder under `app/.` that represent your data layer (e.g `app/mysql`)
 - Implement the ` VisitService interface` in `app/mysql/visit.go`:  
 ```go
@@ -282,65 +284,69 @@ package mysql
 import (
 	"context"
 	"database/sql"
+
 	"github.com/eldad87/go-boilerplate/src/app"
 	"github.com/eldad87/go-boilerplate/src/app/mysql/models"
 	"github.com/eldad87/go-boilerplate/src/pkg/validator"
-	"github.com/volatiletech/null"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func NewVisitService(db *sql.DB, sv validator.StructValidator) *VisitService {
-    return &VisitService{db, sv}
+func NewVisitService(db *sql.DB, sv validator.StructValidator) *visitService {
+	return &visitService{db, sv}
 }
 
-type VisitService struct {
-    db *sql.DB
-    sv validator.StructValidator
+type visitService struct {
+	db *sql.DB
+	sv validator.StructValidator
 }
 
-func (vs *VisitService) Get(c context.Context, id *uint) (*app.Visit, error) {
-    bVisit, err := models.FindVisit(c, vs.db, *id)
-    if err != nil {
-        return nil, err
-    }
-    
-    return sqlBoilerToVisit(bVisit), nil
+func (vs *visitService) Get(c context.Context, id *uint) (*app.Visit, error) {
+	bVisit, err := models.FindVisit(c, vs.db, *id)
+
+	// No record found
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return sqlBoilerToVisit(bVisit), nil
 }
 
-func (vs *VisitService) Set(c context.Context, v *app.Visit) (*app.Visit, error) {
-    bVisit := models.Visit{
-        ID:        v.ID,
-        FirstName: null.StringFrom(v.FirstName),
-        LastName:  null.StringFrom(v.LastName),
-    }
-    
-    // Validate our Struct using the "validate" tags
-    err := vs.sv.StructCtx(c, v)
-    if err != nil {
-        return nil, err
-    }
-    
-    if bVisit.ID == 0 {
-        err = bVisit.Insert(c, vs.db, boil.Infer())
-    } else {
-        _, err = bVisit.Update(c, vs.db, boil.Infer())
-    }
-    
-    if err != nil {
-        return nil, err
-    }
-    
-    return sqlBoilerToVisit(&bVisit), nil
+func (vs *visitService) Set(c context.Context, v *app.Visit) (*app.Visit, error) {
+	bVisit := models.Visit{
+		ID:        v.ID,
+		FirstName: null.StringFrom(v.FirstName),
+		LastName:  null.StringFrom(v.LastName),
+	}
+
+	err := vs.sv.StructCtx(c, v)
+	if err != nil {
+		return nil, err
+	}
+
+	if bVisit.ID == 0 {
+		err = bVisit.Insert(c, vs.db, boil.Infer())
+	} else {
+		_, err = bVisit.Update(c, vs.db, boil.Infer())
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sqlBoilerToVisit(&bVisit), nil
 }
 
 func sqlBoilerToVisit(bVisit *models.Visit) *app.Visit {
-    return &app.Visit{
-        ID:        bVisit.ID,
-        FirstName: bVisit.FirstName.String,
-        LastName:  bVisit.LastName.String,
-        CreatedAt: bVisit.CreatedAt,
-        UpdatedAt: bVisit.UpdatedAt,
-    }
+	return &app.Visit{
+		ID:        bVisit.ID,
+		FirstName: bVisit.FirstName.String,
+		LastName:  bVisit.LastName.String,
+		CreatedAt: bVisit.CreatedAt,
+		UpdatedAt: bVisit.UpdatedAt,
+	}
 }
 ```
 
@@ -353,7 +359,7 @@ In this example, We will
  - Document it using OpenAPI (Swagger)
 
 So lets start:
-- Define our `VisitTransport` using protobuf in `transport/grpc/proto/visit_transport.proto`, pay attention to the constrain on `ID`: 
+- Define our `VisitTransport` using protobuf in `transport/grpc/proto/visit.proto`, pay attention to the constrain on `ID`: 
 ```proto
 // ...
 
@@ -401,7 +407,7 @@ message VisitResponse {
 - Generate our gRPC handler, validators, RESTful API and documentation (Swagger):  
   - `make protobuf`  
   \* The auto-generated code is located under the same folder as our `visit_transport.proto` file.
-- Implement the auto-generated `VisitServiceServer interface` (can be found in in `transport/grpc/proto/visit_transport.pb.go`).
+- Implement the auto-generated `VisitServiceServer interface` (can be found in in `transport/grpc/proto/visit.pb.go`).
   - Important! - Use your services to persist your data (`app/*.go`), Inject them as dependency when needed.
   - Store your implementation in a different folder (e.g `transport/grpc/visit_transport.go`) for better separation.
 ```go

@@ -52,7 +52,11 @@ services:
         build_env: 'development'
         app_port: 8080
         app_grpc_port: 8082
-        protobuf_release_tag: '3.11.4'
+        sqlboiler_version: '4.4.0'
+        sqlboiler_null_version: '8.1.1'
+        protobuf_release_tag: '3.14.0'
+        grpc_gateway_version: '2.2.0'
+        app_cmd: 'grpc'
     security_opt:
       - seccomp:unconfined
     volumes:

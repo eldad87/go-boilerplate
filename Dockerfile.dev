@@ -1,15 +1,23 @@
-FROM golang:1.14.2 as builder
+FROM golang:1.15.8 as builder
 
 # Arguments to Env variables
 ARG build_env
 ARG app_port
 ARG app_grpc_port
 ARG protobuf_release_tag
+ARG grpc_gateway_version
+ARG sqlboiler_version
+ARG sqlboiler_null_version
+ARG app_cmd
 
 ENV BUILD_ENV $build_env
 ENV APP_PORT $app_port
 ENV APP_GRPC_PORT $app_grpc_port
 ENV PROTOBUF_RELEASE_TAG $protobuf_release_tag
+ENV GRPC_GATEWAY_VERSION $grpc_gateway_version
+ENV SQLBOILER_VERSION $sqlboiler_version
+ENV SQLBOILER_NULL_VERSION $sqlboiler_null_version
+ENV APP_CMD $app_cmd
 
 # Path
 ENV GOBIN=$GOPATH/bin
@@ -26,17 +34,29 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
     rm -rf protoc3 && \
     rm protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip
 
-RUN go mod init
-RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+# Protobuf, gRPC and Gateway
+RUN set -e && \
+    GO111MODULE=on go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v${GRPC_GATEWAY_VERSION} && \
+    cd /go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway/v2@v${GRPC_GATEWAY_VERSION}/protoc-gen-grpc-gateway && \
+    go install .
+
+RUN set -e && \
+    GO111MODULE=on go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v${GRPC_GATEWAY_VERSION} && \
+    cd /go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway/v2@v${GRPC_GATEWAY_VERSION}/protoc-gen-openapiv2 && \
+    go install .
+
+RUN go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+RUN go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
 RUN go get -u github.com/srikrsna/protoc-gen-gotag
-RUN go get -u github.com/envoyproxy/protoc-gen-validate
-RUN go get -u github.com/golang/protobuf/protoc-gen-go
+RUN go get -d github.com/envoyproxy/protoc-gen-validate && make build -C /go/src/github.com/envoyproxy/protoc-gen-validate/
 
 # SQLBoiler
-RUN go get -u github.com/volatiletech/sqlboiler/v4@v4.2.0
+RUN set -e && \
+    GO111MODULE=on go get -u github.com/volatiletech/sqlboiler/v4@v${SQLBOILER_VERSION}
+RUN GO111MODULE=on go get -u  github.com/volatiletech/null/v8@v${SQLBOILER_NULL_VERSION}
 # Also install the driver of your choice, there exists pqsl, mysql, mssql
-RUN go get -u github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@v4.2.0
+RUN GO111MODULE=on go get -u github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@v${SQLBOILER_VERSION}
 
 # Go based task runner
 RUN git clone https://github.com/magefile/mage
@@ -44,8 +64,8 @@ RUN cd mage && go run bootstrap.go
 RUN cd $GOPATH/src/github.com/eldad87/go-boilerplate && rm -rf mage
 
 # Dep
-#ADD go.mod go.mod
-#ADD go.sum go.sum
+ADD go.mod go.mod
+ADD go.sum go.sum
 Run go mod download
 
 # Install the correct protoc-gen-go in the correct version
@@ -58,6 +78,6 @@ Add src/ src/
 RUN go get -u github.com/VojtechVitek/rerun/cmd/rerun
 
 # Run download deps, sync vendor folder to host and binary hot-reload
-CMD go mod download && rerun -watch ./ -ignore vendor vendor_host bin migration -run go run ./src/cmd/grpc/app.go
+CMD go mod download && rerun -watch ./ -ignore vendor vendor_host bin migration -run go run ./src/cmd/${APP_CMD}/app.go
 
 EXPOSE ${APP_GRPC_PORT} ${APP_PORT}

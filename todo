@@ -1,0 +1,24 @@
+AuthBoss
+    - Basic implementation
+    - Tennant aware (register by domain, email sender, view, etc)
+
+OAuth2 server
+    - Basic implementation & polymorphic relationship (?)
+
+GRPC
+    - OAuth2 Auth middleware. Inject User (Account & Tenant) into context. gRPC-Gateway forward the 'authentication' header as meta-data. JWT token!
+        Scopes compare 
+    - Request Id from context (& One for HTTP for Gateway's logs?)
+        Gateway middleware Pass 'x-request-id' header as metadata
+        Generate if doesn't exists
+        https://github.com/goadesign/goa/tree/v2/grpc/middleware
+    - Logs with Request Id and Span Id
+        https://github.com/uber-go/zap/issues/476
+    - Sentry with Request ID and Span
+    
+
+Signals
+    - https://github.com/zenazn/goji/tree/master/graceful
+    - https://www.clarifai.com/blog/muxing-together-grpc-and-http-traffic-with-grpc-gateway
+
+Machinery?

@@ -7,6 +7,7 @@ import (
 	"reflect"
 )
 
+/*
 // Check if ID already presents && Set
 func IsUpdate(fl validator.FieldLevel) bool {
 	p := fl.Parent()
@@ -28,7 +29,7 @@ func RegisterIsUpdate(v *validator.Validate) error {
 func RegisterIsNew(v *validator.Validate) error {
 	return v.RegisterValidation("isNew", IsNew)
 }
-
+*/
 func RegisterSQLNullValuer(v *validator.Validate) {
 	v.RegisterCustomTypeFunc(validateValuer, null.String{}, null.Int{}, null.Bool{}, null.Float{}, null.Time{})
 }

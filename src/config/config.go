@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 // explicit call to Set > flag > env > config > key/value store > default
@@ -21,6 +22,9 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.SetDefault("app.request.vol_threshold", 20)
 	conf.SetDefault("app.request.sleep_window", 5000)
 	conf.SetDefault("app.request.err_per_threshold", 50)
+
+	// Identity app
+	// conf.SetDefault("app.identity.http_route_prefix", "/auth")
 
 	// Defaults: Monitoring
 	conf.SetDefault("log.level", "debug")

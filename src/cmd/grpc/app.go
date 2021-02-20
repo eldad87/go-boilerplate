@@ -10,16 +10,17 @@ import (
 	"time"
 
 	"github.com/TheZeroSlave/zapsentry"
-	"github.com/afex/hystrix-go/hystrix/metric_collector"
+	metricCollector "github.com/afex/hystrix-go/hystrix/metric_collector"
 	service "github.com/eldad87/go-boilerplate/src/app/mysql"
 	"github.com/eldad87/go-boilerplate/src/config"
-	grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
-	grpc_status_v9validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/status/validator.v10"
+
+	//grpcGatewayError "github.com/eldad87/go-boilerplate/src/pkg/grpc-gateway/error"
+	grpc_status_validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/status/validator.v10"
 	grpc_validator "github.com/eldad87/go-boilerplate/src/pkg/grpc/middleware/validator/protoc_gen_validate"
 	promZap "github.com/eldad87/go-boilerplate/src/pkg/uber/zap"
 	grpcTransport "github.com/eldad87/go-boilerplate/src/transport/grpc"
-	"github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
-	"github.com/jmattheis/go-packr-swagger-ui"
+	pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
+	swaggerui "github.com/jmattheis/go-packr-swagger-ui"
 
 	null_v4_validation "github.com/eldad87/go-boilerplate/src/pkg/validator/custom/guregu/null-v4"
 	v10validator "github.com/go-playground/validator/v10"
@@ -27,22 +28,24 @@ import (
 	sqlLogger "github.com/eldad87/go-boilerplate/src/pkg/go-sql-driver/logger"
 	databaseDriver "github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/packr"
-	"github.com/rubenv/sql-migrate"
+	migrate "github.com/rubenv/sql-migrate"
 
 	sqlmwInterceptor "github.com/eldad87/go-boilerplate/src/pkg/ngrok/sqlmw"
 	"github.com/ngrok/sqlmw"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	//"github.com/eldad87/go-boilerplate/src/pkg/crypto"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/ibm-developer/generator-ibm-core-golang-gin/generators/app/templates/plugins"
 	jaegerZap "github.com/jaegertracing/jaeger-client-go/log/zap"
 	jaegerprom "github.com/jaegertracing/jaeger-lib/metrics/prometheus"
+
 	"github.com/opentracing-contrib/go-stdlib/nethttp"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -158,6 +161,11 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 
 	/*
+	 * PreRequisite: Other
+	 * **************************** */
+	//passwordHandler := crypto.Hash{}
+
+	/*
 	 * PreRequisite: DataBase
 	 * **************************** */
 	// Logger
@@ -205,7 +213,7 @@ func main() {
 			grpc_zap.StreamServerInterceptor(logger),
 			grpc_recovery.StreamServerInterceptor(),
 			grpc_validator.StreamServerInterceptor(),
-			grpc_status_v9validator.StreamServerInterceptor(),
+			grpc_status_validator.StreamServerInterceptor(),
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_ctxtags.UnaryServerInterceptor(),
@@ -214,7 +222,7 @@ func main() {
 			grpc_zap.UnaryServerInterceptor(logger),
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_validator.UnaryServerInterceptor(),
-			grpc_status_v9validator.UnaryServerInterceptor(),
+			grpc_status_validator.UnaryServerInterceptor(),
 		)),
 	)
 	defer grpcServer.GracefulStop()
@@ -223,14 +231,10 @@ func main() {
 	// Register valuer for guregu/null.v4
 	null_v4_validation.RegisterSQLNullValuer(validator)
 
-	/*	err = null_v4_validation.RegisterIsUpdate(validator)
-		if err != nil {
-			logger.Error("Failed to register isUpdate validation")
-		}
-	*/
 	// Visit Service
 	visitService := service.NewVisitService(db, validator)
 	grpcVisitServer := grpcTransport.VisitServer{VisitService: visitService}
+
 	pb.RegisterVisitServer(grpcServer, &grpcVisitServer)
 
 	// Start listening to gRPC requests
@@ -253,8 +257,7 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	// Customize our error response
-	runtime.HTTPError = grpcGatewayError.CustomHTTPError
+
 	mux := runtime.NewServeMux(
 		runtime.WithMetadata(
 			func(ctx context.Context, r *http.Request) metadata.MD {
@@ -273,6 +276,8 @@ func main() {
 				return metadata.New(carrier)
 			},
 		),
+		// Customize our error response
+		// runtime.WithErrorHandler(grpcGatewayError.CustomHTTPError),
 	)
 
 	// https://github.com/grpc-ecosystem/grpc-gateway/issues/348
@@ -289,6 +294,7 @@ func main() {
 	if err != nil {
 		logger.Sugar().Errorf("Failed to register Visit Service %+v", err)
 	}
+
 	http.HandleFunc(conf.GetString("app.grpc.http_route_prefix")+"/", muxHandlerFunc)
 
 	// Swagger
@@ -304,6 +310,6 @@ func main() {
 	/*
 	 * Start listening for incoming HTTP requests
 	 * **************************** */
-	logger.Info("Starting..")
+	logger.Info("Starting on port " + conf.GetString("app.port"))
 	http.ListenAndServe(":"+conf.GetString("app.port"), nil)
 }

@@ -27,16 +27,26 @@ RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_R
     rm protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip
 
 # Protobuf, gRPC and Gateway
-RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+RUN set -e && \
+    GO111MODULE=on go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v${grpc_gateway_version} && \
+    cd /go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway/v2@v${grpc_gateway_version}/protoc-gen-grpc-gateway && \
+    go install .
+
+RUN set -e && \
+    GO111MODULE=on go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v${grpc_gateway_version} && \
+    cd /go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway/v2@v${grpc_gateway_version}/protoc-gen-openapiv2 && \
+    go install .
+
+RUN go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+RUN go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
 RUN go get -u github.com/srikrsna/protoc-gen-gotag
-RUN go get -u github.com/envoyproxy/protoc-gen-validate
-RUN go get -u github.com/golang/protobuf/protoc-gen-go
+RUN go get -d github.com/envoyproxy/protoc-gen-validate && make build -C /go/src/github.com/envoyproxy/protoc-gen-validate/
 
 # SQLBoiler
-RUN go get -u -t github.com/volatiletech/sqlboiler/v4@v4.2.0
+RUN GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
 # Also install the driver of your choice, there exists pqsl, mysql, mssql
-RUN go get github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@v4.2.0
+RUN GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
 
 # Go based task runner
 RUN git clone https://github.com/magefile/mage

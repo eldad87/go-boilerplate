@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+
 	"github.com/eldad87/go-boilerplate/src/app"
 	pb "github.com/eldad87/go-boilerplate/src/transport/grpc/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -9,6 +10,7 @@ import (
 
 type VisitServer struct {
 	VisitService app.VisitService
+	pb.UnimplementedVisitServer
 }
 
 func (vs *VisitServer) Get(c context.Context, id *pb.ID) (*pb.VisitResponse, error) {
